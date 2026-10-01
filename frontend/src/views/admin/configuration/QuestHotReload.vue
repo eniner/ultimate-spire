@@ -39,6 +39,9 @@
             When you make changes to your quest files, Spire will immediately signal your game server to reload the
             appropriate zone's quests for you to help speed up development feedback loops
           </div>
+          <div class="mt-3">
+            <router-link class="btn btn-sm btn-dark" to="/admin/server-files">Open server / quest files</router-link>
+          </div>
         </div>
       </div>
 

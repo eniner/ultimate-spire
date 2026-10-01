@@ -18,59 +18,50 @@
         <table id="spell-table" class="eq-table bordered eq-highlight-rows">
           <thead class="eq-table-floating-header">
           <tr>
-            <th style="width: 200px;"></th>
-            <th style="width: auto;">Id</th>
-            <th style="width: auto; min-width: 270px">Spell</th>
-            <th style="width: auto; min-width: 300px">Level</th>
-            <th style="width: 400px">Effects</th>
+            <th style="width: 96px;"></th>
+            <th class="text-right" style="width: 70px;">ID</th>
+            <th style="width: auto; min-width: 250px">Spell</th>
+            <th style="width: auto; min-width: 280px">Classes</th>
+            <th>Effects</th>
 
-            <th>Mana</th>
-            <th style="width: 80px">Cast</th>
-            <th style="width: 80px">Recast</th>
-            <th style="width: 120px">Duration</th>
+            <th class="text-right">Mana</th>
+            <th class="text-right" style="width: 110px">Cast / recast</th>
+            <th style="width: 130px">Duration</th>
             <th>Target</th>
-
-            <!--              <th>Description</th>-->
           </tr>
           </thead>
           <tbody>
           <tr v-for="(spell, index) in spells" :key="spell.id">
-            <td class="p-0 text-center">
-
+            <td class="spell-actions">
               <b-button
-                variant="outline-danger"
                 size="sm"
-                style="width: 28px; height: 28px"
-                class="btn-dark mr-2"
+                variant="outline-secondary"
+                title="Edit"
+                aria-label="Edit spell"
+                @click="editSpell(spell.id)"
+              >
+                <i class="fa fa-pencil"></i>
+              </b-button>
+              <b-button
+                size="sm"
+                variant="outline-secondary"
+                title="Clone"
+                aria-label="Clone spell"
+                @click="editSpell(spell.id, true)"
+              >
+                <i class="fa fa-clone"></i>
+              </b-button>
+              <b-button
+                size="sm"
+                variant="outline-danger"
                 title="Delete"
+                aria-label="Delete spell"
                 @click="deleteSpell(spell)"
               >
                 <i class="fa fa-trash"></i>
               </b-button>
-
-              <b-button
-                @click="editSpell(spell.id)"
-                style="width: 28px; height: 28px"
-                size="sm"
-                title="Edit"
-                class="btn btn-dark btn-outline-success mr-2"
-              >
-                <i class="fa fa-pencil-square"></i>
-              </b-button>
-
-              <b-button
-                @click="editSpell(spell.id, true)"
-                style="width: 30px; height: 28px"
-                size="sm"
-                title="Clone"
-                variant="outline-light"
-              >
-                <i class="ra ra-double-team"></i>
-
-              </b-button>
-
             </td>
-            <td>
+            <td class="text-right tabular">
               {{ spell.id }}
             </td>
             <td
@@ -85,30 +76,29 @@
               />
             </td>
             <td class="text-left">
-                <span v-for="(icon, index) in dbClassIcons">
-                  <div
-                    v-if="spell['classes_' + index] > 0 && spell['classes_' + index] < 255"
-                    class="d-inline-block mr-2"
-                  >
-                      <span
-                        style="border-radius: 4px"
-                        :class="'item-' + icon + '-sm'"
-                        :title="dbClassesShort[index]"
-                      />
-                    {{ dbClassesShort[index] }}
-                    ({{ spell["classes_" + index] }})
-                    </div>
-                </span>
+              <div class="spell-class-chips">
+                <span
+                  v-for="c in classLevels(spell)"
+                  :key="c.index"
+                  class="spell-class-chip"
+                  :title="c.name + ' level ' + c.level"
+                ><span v-if="c.icon" :class="'item-' + c.icon + '-sm'"></span><b>{{ c.name }}</b>{{ c.level }}</span>
+              </div>
             </td>
-            <td style="text-align: left">
+            <td class="text-left spell-effects">
               <eq-spell-effects :spell="spell"/>
             </td>
 
-            <td>{{ spell["mana"] > 0 ? spell["mana"] : "" }}</td>
-            <td> {{ (spell["cast_time"] / 1000) }} sec</td>
-            <td> {{ (spell["recast_time"] / 1000) }} sec</td>
-            <td v-if="spell['buffduration']"> {{ humanTime(getBuffDuration(spell) * 6) }} {{ getBuffDuration(spell) }} tic(s)</td>
-            <td v-else>N/A</td>
+            <td class="text-right tabular">{{ spell["mana"] > 0 ? spell["mana"] : "" }}</td>
+            <td class="text-right tabular text-nowrap">
+              {{ seconds(spell["cast_time"]) }}
+              <span class="text-muted">/ {{ spell["recast_time"] > 0 ? seconds(spell["recast_time"]) : "–" }}</span>
+            </td>
+            <td v-if="spell['buffduration']" class="tabular">
+              {{ humanTime(getBuffDuration(spell) * 6) }}
+              <div class="text-muted small">{{ getBuffDuration(spell) }} tics</div>
+            </td>
+            <td v-else class="text-muted">–</td>
             <td> {{ getTargetTypeName(spell["targettype"]) }}</td>
 
 
@@ -179,6 +169,21 @@ export default {
     getClasses: function (spell) {
       return Spells.getClasses(spell)
     },
+    // classes_N of 255 means the class can't use the spell
+    classLevels(spell) {
+      return Object.keys(this.dbClassIcons)
+        .filter((i) => spell['classes_' + i] > 0 && spell['classes_' + i] < 255)
+        .map((i) => ({
+          index: i,
+          name: this.dbClassesShort[i],
+          level: spell['classes_' + i],
+          icon: this.dbClassIcons[i],
+        }))
+    },
+    seconds(ms) {
+      const s = ms / 1000
+      return (Number.isInteger(s) ? s : s.toFixed(1)) + "s"
+    },
     getTargetTypeColor: function (targetType) {
       return Spells.getTargetTypeColor(targetType)
     },
@@ -215,6 +220,55 @@ export default {
 </script>
 
 <style scoped>
+
+.spell-actions {
+  white-space: nowrap;
+}
+
+.spell-actions .btn {
+  width: 26px;
+  height: 26px;
+  padding: 0 !important;
+  margin-right: 4px;
+  font-size: 12px !important;
+}
+
+.spell-class-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 78px);
+  gap: 4px;
+}
+
+.spell-class-chip {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.spell-class-chip [class*="item-"] {
+  display: block !important;
+  margin: 0 !important;
+}
+
+.spell-class-chip b {
+  color: var(--text);
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.spell-effects {
+  max-width: 440px;
+  min-width: 260px;
+  line-height: 1.45;
+}
 
 /* For Mobile */
 @media screen and (max-width: 540px) {

@@ -22,7 +22,7 @@ const router = new Router({
 
     // if title is passed
     if (to.meta && to.meta.title) {
-      document.title = "[Spire] " + to.meta.title || "Spire"
+      document.title = "[Ultimate Spire] " + to.meta.title || "Ultimate Spire"
     }
 
     // if link contains a hash target
@@ -147,9 +147,49 @@ const router = new Router({
           meta: {title: "Item Edit"},
         },
         {
+          path: util.format(ROUTE.ITEM_EDIT_CLASSIC, ":id"),
+          component: () => import('./views/items/ItemEditorClassic.vue'),
+          meta: {title: "Item (PEQ Form)"},
+        },
+        {
+          path: ROUTE.ITEMS_EVOLVING,
+          component: () => import('./views/items/EvolvingItems.vue'),
+          meta: {title: "Evolving Items"},
+        },
+        {
+          path: util.format(ROUTE.ITEM_EVOLVING_CHAIN, ":evoId"),
+          component: () => import('./views/items/EvolvingChainEditor.vue'),
+          meta: {title: "Evolving Chain"},
+        },
+        {
           path: ROUTE.LOOT,
           component: () => import('./views/loot/Loot.vue'),
           meta: {title: "Loot Edit"},
+        },
+        {
+          path: ROUTE.EDITORS,
+          component: () => import('./views/editors/EditorsHub.vue'),
+          meta: {title: "PEQ Editors"},
+        },
+        {
+          path: "/editors/util",
+          component: () => import('./views/editors/PeqUtil.vue'),
+          meta: {title: "Utilities"},
+        },
+        {
+          path: "/editors/mercs",
+          component: () => import('./views/editors/PeqRawEditor.vue'),
+          meta: {title: "Mercs"},
+        },
+        {
+          path: ROUTE.CHARACTER_INVENTORY,
+          component: () => import('./views/characters/CharacterInventory.vue'),
+          meta: {title: "Inventory"},
+        },
+        {
+          path: ROUTE.EDITOR,
+          component: () => import('./views/editors/PeqTableEditor.vue'),
+          meta: {title: "Editor"},
         },
         {
           path: ROUTE.ZONES,
@@ -205,6 +245,11 @@ const router = new Router({
           path: util.format(ROUTE.NPC_SPELL_EDIT, ":id"),
           component: () => import('./views/npcs/NpcSpellListEditor.vue'),
           meta: {title: "NPC Spells List Editor"},
+        },
+        {
+          path: ROUTE.ZONE_ATLAS,
+          component: () => import('./views/zone/ZoneAtlas.vue'),
+          meta: {title: "Zone Atlas"},
         },
         {
           path: '/zone/:zone',
@@ -308,6 +353,11 @@ const router = new Router({
           path: ROUTE.ADMIN_CONFIG_QUEST_HOT_RELOAD,
           component: () => import('./views/admin/configuration/QuestHotReload.vue'),
           meta: {title: "Quest Hot Reload Settings"},
+        },
+        {
+          path: ROUTE.ADMIN_SERVER_FILES,
+          component: () => import('./views/admin/ServerFiles.vue'),
+          meta: {title: "Server Files"},
         },
         {
           path: ROUTE.ADMIN_DATABASE_BACKUP,

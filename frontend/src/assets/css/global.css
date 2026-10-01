@@ -777,3 +777,22 @@ html, body{
         box-shadow: 0 0 1px rgba(255, 255, 255, .5);
     }
 }
+
+/* Stream / screenshot privacy: hide names, hosts, keys, passwords, paths */
+html.spire-privacy .privacy-hide,
+html.spire-privacy input.privacy-hide,
+html.spire-privacy textarea.privacy-hide,
+html.spire-privacy .privacy-hide input,
+html.spire-privacy .privacy-hide textarea,
+html.spire-privacy .privacy-hide .mono,
+html.spire-privacy .admin-header-window > .eq-window-title-bar {
+    filter: blur(9px);
+    user-select: none !important;
+}
+
+html.spire-privacy input.privacy-hide,
+html.spire-privacy textarea.privacy-hide,
+html.spire-privacy .privacy-hide input,
+html.spire-privacy .privacy-hide textarea {
+    caret-color: transparent;
+}

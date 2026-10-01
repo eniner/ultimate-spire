@@ -1289,6 +1289,10 @@
               </div>
             </eq-tab>
 
+            <eq-tab name="Evolving" class="minified-inputs">
+              <item-evolving-tab :item="item"/>
+            </eq-tab>
+
             <eq-tab name="Meta">
               <div
                 class="row"
@@ -1469,6 +1473,15 @@
               <i class="fe fe-save"></i>
               Save Item
             </button>
+
+            <router-link
+              :to="classicFormRoute"
+              tag="button"
+              class="mb-3 ml-2"
+            >
+              <i class="fa fa-list-alt"></i>
+              PEQ Form
+            </router-link>
 
             <!--                <b-button-->
             <!--                  class="btn-dark btn-sm btn-dark"-->
@@ -1677,6 +1690,7 @@ import ItemStatScaleTool       from "./components/ItemStatScalePercentage";
 import ItemStatScalePercentage from "./components/ItemStatScalePercentage";
 import ItemStatScaleRange      from "./components/ItemStatScaleRange";
 import ItemColorSelector       from "./components/ItemColorSelector";
+import ItemEvolvingTab         from "./components/ItemEvolvingTab";
 import * as util               from "util";
 import {RACES}              from "../../app/constants/eq-race-constants";
 import ItemMaterialPreview  from "./components/ItemMaterialPreview";
@@ -1703,6 +1717,7 @@ export default {
     AugBitmaskCalculator,
     ItemMaterialPreview,
     ItemColorSelector,
+    ItemEvolvingTab,
     ItemStatScaleRange,
     ItemStatScalePercentage,
     ItemStatScaleTool,
@@ -1869,6 +1884,11 @@ export default {
         "LDON Sell Back Rate": "ldonsellbackrate",
       },
     }
+  },
+  computed: {
+    classicFormRoute() {
+      return util.format(ROUTE.ITEM_EDIT_CLASSIC, this.$route.params.id)
+    },
   },
   watch: {
 

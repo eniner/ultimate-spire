@@ -1,0 +1,1291 @@
+/*
+  Spire modern theme
+  Everything is scoped to html.spire-modern (set by app/theme.ts) and loaded after the EQ-styled sheets.
+  Many legacy rules use !important or inline styles, which is why some overrides here need !important too.
+*/
+
+/* ---------------------------------------------------------------- tokens */
+
+html.spire-modern {
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-brand: "Source Serif 4", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --sidebar-width: 250px;
+}
+
+html.spire-modern[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1216;
+  --surface: #161a20;
+  --surface-2: #1c2129;
+  --surface-3: #252b35;
+  --sidebar-bg: #12161b;
+  --input-bg: #11151a;
+  --border: #272e38;
+  --border-subtle: #1f252e;
+  --border-strong: #37404d;
+  --text: #e7eaef;
+  --text-muted: #a3adbb;
+  --text-subtle: #75808f;
+  --link: #dfe4ea;
+  --accent: #c9a24a;
+  --accent-strong: #d8b25c;
+  --accent-contrast: #19140a;
+  --accent-soft: rgba(201, 162, 74, 0.14);
+  --danger: #f07178;
+  --danger-soft: rgba(240, 113, 120, 0.12);
+  --success: #4cc38a;
+  --success-soft: rgba(76, 195, 138, 0.12);
+  --focus: #e0bd6a;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+html.spire-modern[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6;
+  --surface-3: #e8ebef;
+  --sidebar-bg: #fbfbfc;
+  --input-bg: #ffffff;
+  --border: #dde1e6;
+  --border-subtle: #eceef1;
+  --border-strong: #c4cad3;
+  --text: #1a212c;
+  --text-muted: #525d6c;
+  --text-subtle: #7a8594;
+  --link: #1a212c;
+  --accent: #946d17;
+  --accent-strong: #7d5b10;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(148, 109, 23, 0.12);
+  --danger: #c4323a;
+  --danger-soft: rgba(196, 50, 58, 0.09);
+  --success: #1c7f53;
+  --success-soft: rgba(28, 127, 83, 0.1);
+  --focus: #946d17;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+/* ---------------------------------------------------------------- page */
+
+html.spire-modern body {
+  background: var(--bg) !important;
+  background-image: none !important;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11", "ss01";
+}
+
+html.spire-modern body::before {
+  display: none !important;
+}
+
+html.spire-modern body,
+html.spire-modern .card,
+html.spire-modern .btn,
+html.spire-modern input,
+html.spire-modern select,
+html.spire-modern textarea,
+html.spire-modern table,
+html.spire-modern .changelog,
+html.spire-modern [class*="eq-window"],
+html.spire-modern .eq-window-title-bar,
+html.spire-modern .toastify {
+  font-family: var(--font-ui) !important;
+}
+
+html.spire-modern code,
+html.spire-modern pre,
+html.spire-modern kbd,
+html.spire-modern [class*="eq-window"] .code-display {
+  font-family: var(--font-mono) !important;
+}
+
+html.spire-modern h1,
+html.spire-modern h2,
+html.spire-modern h3,
+html.spire-modern h4,
+html.spire-modern h5,
+html.spire-modern h6,
+html.spire-modern p,
+html.spire-modern .card-title,
+html.spire-modern .card-body,
+html.spire-modern .table {
+  color: var(--text);
+}
+
+html.spire-modern h1, html.spire-modern h2, html.spire-modern h3,
+html.spire-modern h4, html.spire-modern h5, html.spire-modern h6 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+html.spire-modern h5 { font-size: 15px; }
+html.spire-modern h6 { font-size: 13px; }
+
+/* EQ "menuetto" headers become plain headings */
+html.spire-modern .eq-header,
+html.spire-modern .menuetto-header,
+html.spire-modern [class*="eq-window"] legend {
+  font-family: var(--font-ui) !important;
+  text-shadow: none !important;
+  color: var(--text) !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+html.spire-modern h1.eq-header { font-size: 26px; }
+html.spire-modern h2.eq-header { font-size: 22px; }
+html.spire-modern h3.eq-header { font-size: 20px; }
+html.spire-modern h4.eq-header { font-size: 18px; }
+html.spire-modern h5.eq-header { font-size: 16px; }
+html.spire-modern h6.eq-header { font-size: 14px; }
+html.spire-modern .menuetto-header { font-size: 40px; }
+
+html.spire-modern a {
+  color: var(--link);
+}
+
+html.spire-modern a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+html.spire-modern a.btn:hover,
+html.spire-modern .nav-link:hover,
+html.spire-modern .dropdown-item:hover {
+  text-decoration: none;
+}
+
+html.spire-modern .text-muted { color: var(--text-muted) !important; }
+html.spire-modern .text-danger { color: var(--danger) !important; }
+html.spire-modern .text-success { color: var(--success) !important; }
+html.spire-modern .text-warning,
+html.spire-modern .text-primary { color: var(--accent) !important; }
+html.spire-modern .text-white,
+html.spire-modern .text-light,
+html.spire-modern .text-dark { color: var(--text) !important; }
+
+html.spire-modern hr {
+  border-color: var(--border);
+}
+
+html.spire-modern .tabular,
+html.spire-modern .eq-table td,
+html.spire-modern .table td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- focus */
+
+html.spire-modern :focus {
+  outline: none;
+}
+
+html.spire-modern :focus-visible,
+html.spire-modern .btn:focus-visible,
+html.spire-modern a:focus-visible,
+html.spire-modern [class*="eq-window"] button:focus-visible {
+  outline: 2px solid var(--focus) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+html.spire-modern input:focus-visible,
+html.spire-modern select:focus-visible,
+html.spire-modern textarea:focus-visible,
+html.spire-modern .form-control:focus {
+  outline: 2px solid var(--focus) !important;
+  outline-offset: 0 !important;
+  border-color: var(--focus) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------------- surfaces (windows) */
+
+html.spire-modern .eq-window,
+html.spire-modern .eq-window-simple,
+html.spire-modern .eq-window-fancy,
+html.spire-modern .eq-window-complex,
+html.spire-modern .eq-window-complex-fancy,
+html.spire-modern .eq-window-hybrid,
+html.spire-modern .WindowComplexGM {
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text) !important;
+  padding: var(--space-5);
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+  opacity: 1 !important;
+  font-size: 13px;
+}
+
+html.spire-modern .eq-window:before,
+html.spire-modern .eq-window-simple:before,
+html.spire-modern .eq-window-fancy:before,
+html.spire-modern .eq-window-complex:before,
+html.spire-modern .eq-window-complex-fancy:before,
+html.spire-modern .WindowComplexGM:before,
+html.spire-modern .eq-table-floating-header:before {
+  display: none !important;
+  content: none !important;
+}
+
+html.spire-modern .eq-window-title-bar,
+html.spire-modern .eq-window > .eq-window-title-bar {
+  position: static !important;
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 0 var(--space-4) !important;
+  padding: 0 0 var(--space-3) !important;
+  background: none !important;
+  background-image: none !important;
+  border-bottom: 1px solid var(--border);
+  color: var(--text) !important;
+  font-size: 15px !important;
+  font-weight: 600;
+  line-height: 1.3 !important;
+  text-align: left !important;
+  text-shadow: none !important;
+  overflow: visible !important;
+  z-index: auto !important;
+}
+
+html.spire-modern .eq-window-nested-blue,
+html.spire-modern .eq-window-nested-tan,
+html.spire-modern .eq-dark-background,
+html.spire-modern .eq-alert,
+html.spire-modern .eq-background-dark,
+html.spire-modern [class*="eq-window"] .inner-window {
+  background: var(--surface-2) !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm);
+  color: var(--text) !important;
+}
+
+html.spire-modern .WindowNestedTanTitleBar {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+html.spire-modern .card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text) !important;
+}
+
+html.spire-modern .card-header,
+html.spire-modern .card-footer {
+  background: transparent !important;
+  border-color: var(--border) !important;
+}
+
+html.spire-modern .dropdown-menu,
+html.spire-modern .modal-content,
+html.spire-modern .popover,
+html.spire-modern .toast,
+html.spire-modern .toast-header,
+html.spire-modern .toast-body {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+html.spire-modern .popover.no-bg {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+html.spire-modern .modal-header,
+html.spire-modern .modal-footer {
+  border-color: var(--border) !important;
+}
+
+html.spire-modern .dropdown-item {
+  color: var(--text);
+}
+
+html.spire-modern .dropdown-item:hover,
+html.spire-modern .dropdown-item:focus {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+html.spire-modern pre,
+html.spire-modern [class*="eq-window"] pre,
+html.spire-modern [class*="eq-window"] .code-display {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm);
+  color: var(--text) !important;
+  padding: var(--space-3) !important;
+}
+
+html.spire-modern .toastify.eq-toast {
+  background: var(--surface) !important;
+  background-image: none !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ---------------------------------------------------------------- form controls */
+
+html.spire-modern .form-control,
+html.spire-modern .custom-select,
+html.spire-modern .b-form-tags,
+html.spire-modern [class*="eq-window"] input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),
+html.spire-modern [class*="eq-window"] textarea,
+html.spire-modern [class*="eq-window"] select {
+  background-color: var(--input-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+  font-size: 13px;
+}
+
+html.spire-modern [class*="eq-window"] input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),
+html.spire-modern [class*="eq-window"] textarea {
+  padding: 4px 8px !important;
+}
+
+html.spire-modern [class*="eq-window"] select,
+html.spire-modern select.form-control,
+html.spire-modern .custom-select {
+  padding: 4px 28px 4px 8px !important;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%), linear-gradient(135deg, var(--text-muted) 50%, transparent 50%) !important;
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50% !important;
+  background-size: 5px 5px, 5px 5px !important;
+  background-repeat: no-repeat !important;
+}
+
+html.spire-modern select[multiple] {
+  background-image: none !important;
+  padding-right: 8px !important;
+}
+
+html.spire-modern .form-control::placeholder,
+html.spire-modern input::placeholder {
+  color: var(--text-subtle) !important;
+}
+
+html.spire-modern .form-control:disabled,
+html.spire-modern .form-control[readonly],
+html.spire-modern [class*="eq-window"] input:disabled {
+  background-color: var(--surface-2) !important;
+  color: var(--text-muted) !important;
+}
+
+html.spire-modern [class*="input-group-text"],
+html.spire-modern .input-group-text {
+  background-color: var(--surface-2) !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text-muted) !important;
+}
+
+html.spire-modern .input-group.input-group-merge > .input-group-prepend > .input-group-text,
+html.spire-modern .input-group-flush > .input-group-prepend > .input-group-text,
+html.spire-modern .input-group-flush > .input-group-append > .input-group-text {
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+html.spire-modern .custom-control-label::before {
+  background-color: var(--input-bg) !important;
+  border-color: var(--border-strong) !important;
+}
+
+html.spire-modern .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+html.spire-modern .custom-switch .custom-control-label::before {
+  background-color: var(--surface-3) !important;
+  border: 1px solid var(--border-strong) !important;
+}
+
+html.spire-modern .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+html.spire-modern .custom-switch .custom-control-label::after {
+  background-color: var(--text-muted);
+}
+
+html.spire-modern .custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+  background-color: var(--accent-contrast);
+}
+
+/* EQ image checkbox -> plain box */
+html.spire-modern input[type=checkbox].eq-checkbox + label,
+html.spire-modern input[type=checkbox].eq-checkbox:checked + label {
+  background: var(--input-bg) !important;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  width: 16px;
+  height: 16px;
+  position: relative;
+  cursor: pointer;
+}
+
+html.spire-modern input[type=checkbox].eq-checkbox:checked + label {
+  background: var(--accent) !important;
+  border-color: var(--accent);
+}
+
+html.spire-modern input[type=checkbox].eq-checkbox:checked + label::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--accent-contrast);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+html.spire-modern .eq-checkbox-label:hover {
+  box-shadow: none !important;
+  border-color: var(--text-muted) !important;
+}
+
+html.spire-modern input[type=checkbox]:not(.eq-checkbox):not(.custom-control-input) {
+  accent-color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+html.spire-modern .btn,
+html.spire-modern [class*="eq-window"] button.btn {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 5px 12px;
+  box-shadow: none !important;
+  background-image: none !important;
+  text-shadow: none !important;
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease;
+}
+
+html.spire-modern .btn-sm,
+html.spire-modern [class*="eq-window"] button.btn-sm {
+  padding: 3px 9px;
+  font-size: 12px;
+}
+
+html.spire-modern [class*="eq-window"] button::after {
+  display: none !important;
+}
+
+/* the one filled button: primary, and "warning" which Spire uses for the selected state of toggles */
+html.spire-modern .btn-primary,
+html.spire-modern .btn-warning,
+html.spire-modern [class*="eq-window"] button.btn-primary,
+html.spire-modern [class*="eq-window"] button.btn-warning {
+  background: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+  color: var(--accent-contrast) !important;
+}
+
+html.spire-modern .btn-primary:hover:not(:disabled),
+html.spire-modern .btn-warning:hover:not(:disabled),
+html.spire-modern [class*="eq-window"] button.btn-primary:hover:not(:disabled),
+html.spire-modern [class*="eq-window"] button.btn-warning:hover:not(:disabled) {
+  background: var(--accent-strong) !important;
+  border-color: var(--accent-strong) !important;
+  color: var(--accent-contrast) !important;
+}
+
+/* everything else is outlined and neutral */
+html.spire-modern .btn-secondary,
+html.spire-modern .btn-info,
+html.spire-modern .btn-light,
+html.spire-modern .btn-white,
+html.spire-modern .btn-dark,
+html.spire-modern .btn-outline-primary,
+html.spire-modern .btn-outline-secondary,
+html.spire-modern .btn-outline-success,
+html.spire-modern .btn-outline-warning,
+html.spire-modern .btn-outline-info,
+html.spire-modern .btn-outline-light,
+html.spire-modern .btn-outline-dark,
+html.spire-modern [class*="eq-window"] button.btn-secondary,
+html.spire-modern [class*="eq-window"] button.btn-info,
+html.spire-modern [class*="eq-window"] button.btn-light,
+html.spire-modern [class*="eq-window"] button.btn-white,
+html.spire-modern [class*="eq-window"] button.btn-dark,
+html.spire-modern [class*="eq-window"] button.btn-outline-primary,
+html.spire-modern [class*="eq-window"] button.btn-outline-secondary,
+html.spire-modern [class*="eq-window"] button.btn-outline-success,
+html.spire-modern [class*="eq-window"] button.btn-outline-warning,
+html.spire-modern [class*="eq-window"] button.btn-outline-info,
+html.spire-modern [class*="eq-window"] button.btn-outline-light,
+html.spire-modern [class*="eq-window"] button.btn-outline-dark,
+html.spire-modern [class*="eq-window"] button:not(.btn):not(.close):not(.ui-plain) {
+  background: transparent !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--text) !important;
+}
+
+html.spire-modern .btn-secondary:hover:not(:disabled),
+html.spire-modern .btn-info:hover:not(:disabled),
+html.spire-modern .btn-light:hover:not(:disabled),
+html.spire-modern .btn-white:hover:not(:disabled),
+html.spire-modern .btn-dark:hover:not(:disabled),
+html.spire-modern [class*="btn-outline-"]:hover:not(:disabled),
+html.spire-modern [class*="eq-window"] button:not(.btn-primary):not(.btn-warning):not(.close):not(.ui-plain):hover:not(:disabled) {
+  background: var(--surface-2) !important;
+  border-color: var(--text-subtle) !important;
+  color: var(--text) !important;
+}
+
+html.spire-modern .btn-link,
+html.spire-modern [class*="eq-window"] button.btn-link {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--text-muted) !important;
+}
+
+html.spire-modern .btn-link:hover:not(:disabled),
+html.spire-modern [class*="eq-window"] button.btn-link:hover:not(:disabled) {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--text) !important;
+  text-decoration: underline;
+}
+
+/* success / danger: tinted text, no bright fills */
+html.spire-modern .btn-success,
+html.spire-modern [class*="eq-window"] button.btn-success {
+  background: var(--success-soft) !important;
+  border: 1px solid transparent !important;
+  color: var(--success) !important;
+}
+
+html.spire-modern .btn-danger,
+html.spire-modern [class*="eq-window"] button.btn-danger {
+  background: var(--danger-soft) !important;
+  border: 1px solid transparent !important;
+  color: var(--danger) !important;
+}
+
+html.spire-modern .btn-outline-danger,
+html.spire-modern [class*="eq-window"] button.btn-outline-danger {
+  background: transparent !important;
+  border: 1px solid var(--border-strong) !important;
+  color: var(--danger) !important;
+}
+
+html.spire-modern .btn-outline-danger:hover:not(:disabled),
+html.spire-modern .btn-danger:hover:not(:disabled),
+html.spire-modern [class*="eq-window"] button.btn-outline-danger:hover:not(:disabled) {
+  background: var(--danger-soft) !important;
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
+}
+
+html.spire-modern .btn:disabled,
+html.spire-modern .btn.disabled,
+html.spire-modern [class*="eq-window"] button.btn:disabled {
+  opacity: .45 !important;
+  cursor: not-allowed;
+  background: transparent !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-muted) !important;
+}
+
+html.spire-modern .btn-primary:disabled,
+html.spire-modern .btn-warning:disabled {
+  background: var(--accent) !important;
+  color: var(--accent-contrast) !important;
+}
+
+html.spire-modern .btn-group > .btn {
+  border-radius: 0 !important;
+}
+
+html.spire-modern .btn-group > .btn:first-child {
+  border-top-left-radius: var(--radius-sm) !important;
+  border-bottom-left-radius: var(--radius-sm) !important;
+}
+
+html.spire-modern .btn-group > .btn:last-child {
+  border-top-right-radius: var(--radius-sm) !important;
+  border-bottom-right-radius: var(--radius-sm) !important;
+}
+
+/* EQ image buttons */
+html.spire-modern .eq-button,
+html.spire-modern .eq-button-wrap,
+html.spire-modern .eq-button-fancy,
+html.spire-modern .eq-button-disabled {
+  display: inline-block;
+  background: transparent !important;
+  background-image: none !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  color: var(--text) !important;
+  font-family: var(--font-ui) !important;
+  font-size: 13px !important;
+  font-weight: 500;
+  text-shadow: none !important;
+  box-shadow: none !important;
+  padding: 4px 12px;
+  margin: 0;
+  width: auto;
+  height: auto;
+  line-height: 1.4 !important;
+  cursor: pointer;
+}
+
+html.spire-modern .eq-button:hover,
+html.spire-modern .eq-button-wrap:hover,
+html.spire-modern .eq-button-fancy:hover {
+  background: var(--surface-2) !important;
+  border-color: var(--text-subtle) !important;
+}
+
+html.spire-modern .eq-button-fancy-highlighted {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+/* ---------------------------------------------------------------- badges, alerts */
+
+html.spire-modern .badge {
+  font-family: var(--font-ui);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  background: var(--surface-3);
+}
+
+html.spire-modern .badge-primary,
+html.spire-modern .badge-warning {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+html.spire-modern .badge-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+html.spire-modern .badge-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+html.spire-modern .alert {
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 10px 14px;
+}
+
+html.spire-modern .alert-danger {
+  border-color: var(--danger);
+  background: var(--danger-soft);
+  color: var(--text);
+}
+
+html.spire-modern .alert-success {
+  border-color: var(--success);
+  background: var(--success-soft);
+  color: var(--text);
+}
+
+html.spire-modern .alert-warning,
+html.spire-modern .alert-info,
+html.spire-modern .alert-primary {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------- tabs (EqTabs) */
+
+html.spire-modern NAV.eq-tab-box-fancy UL,
+html.spire-modern .eq-window NAV.eq-tab-box-fancy UL {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 2px;
+  height: auto;
+  margin: 0 0 var(--space-4) !important;
+  padding: 0;
+  background: none !important;
+  border-bottom: 1px solid var(--border);
+}
+
+html.spire-modern NAV.eq-tab-box-fancy UL LI,
+html.spire-modern .eq-window NAV.eq-tab-box-fancy UL LI,
+html.spire-modern .eq-window NAV.eq-tab-box-fancy UL LI:hover {
+  flex-grow: 0;
+  height: auto;
+  margin-bottom: -1px;
+  padding: 7px 12px !important;
+  line-height: 1.3 !important;
+  background: none !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--text-muted);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+html.spire-modern NAV.eq-tab-box-fancy UL LI:hover {
+  color: var(--text);
+}
+
+html.spire-modern NAV.eq-tab-box-fancy UL LI.eq-tab-open,
+html.spire-modern .eq-window NAV.eq-tab-box-fancy UL LI.eq-tab-open {
+  color: var(--text);
+  border-bottom-color: var(--accent) !important;
+}
+
+html.spire-modern NAV.eq-tab-box-fancy UL LI a {
+  color: inherit !important;
+  font-weight: inherit !important;
+  text-decoration: none !important;
+}
+
+/* bootstrap-vue tabs */
+html.spire-modern .nav-tabs {
+  border-color: var(--border);
+}
+
+html.spire-modern .nav-tabs .nav-link {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  background: none;
+}
+
+html.spire-modern .nav-tabs .nav-link.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  background: none;
+}
+
+/* ---------------------------------------------------------------- tables */
+
+html.spire-modern table.eq-table,
+html.spire-modern .table {
+  color: var(--text);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+html.spire-modern table.eq-table tr:nth-child(even) {
+  background: none;
+}
+
+html.spire-modern .eq-table THEAD TR TH,
+html.spire-modern .table thead th {
+  background: var(--surface) !important;
+  color: var(--text-muted) !important;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-transform: none;
+  padding: 9px 12px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  vertical-align: bottom;
+}
+
+html.spire-modern .eq-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+html.spire-modern .eq-table TBODY TR TD,
+html.spire-modern table.bordered TBODY TR TD,
+html.spire-modern .table td {
+  color: var(--text);
+  padding: 7px 12px;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  vertical-align: middle;
+}
+
+html.spire-modern table.bordered tr {
+  border-bottom: 0;
+}
+
+html.spire-modern .eq-table TBODY TR,
+html.spire-modern .table tbody tr {
+  transition: background-color .1s ease;
+}
+
+html.spire-modern .eq-table TBODY TR:hover,
+html.spire-modern .eq-highlight-rows TBODY TR:hover,
+html.spire-modern .table-hover tbody tr:hover {
+  background: var(--surface-2) !important;
+}
+
+html.spire-modern .eq-table-floating-header {
+  background: var(--surface) !important;
+  background-image: none !important;
+  box-shadow: inset 0 -1px 0 var(--border) !important;
+  filter: none !important;
+}
+
+html.spire-modern .eq-table a:not(.btn),
+html.spire-modern .eq-table a:link:not(.btn),
+html.spire-modern .eq-table a:visited:not(.btn),
+html.spire-modern .eq-window-simple a,
+html.spire-modern .eq-window-simple a:link,
+html.spire-modern .eq-window-simple a:visited {
+  color: var(--link);
+}
+
+html.spire-modern .eq-table a:not(.btn):hover,
+html.spire-modern .eq-window-simple a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------------- progress / misc */
+
+html.spire-modern DIV.eq-progress-bar {
+  background: var(--surface-3) !important;
+  background-image: none !important;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+html.spire-modern DIV.eq-progress-bar DIV:before {
+  background: var(--accent) !important;
+  background-image: none !important;
+}
+
+html.spire-modern .progress {
+  background: var(--surface-3);
+}
+
+html.spire-modern .progress-bar {
+  background-color: var(--accent);
+}
+
+html.spire-modern .vue-back-to-top .btn,
+html.spire-modern .btn-to-top {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+html.spire-modern ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html.spire-modern ::-webkit-scrollbar-thumb,
+html.spire-modern .navbar::-webkit-scrollbar-thumb,
+html.spire-modern .card *::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+html.spire-modern ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-subtle);
+  border: 3px solid transparent !important;
+}
+
+html.spire-modern .footer,
+html.spire-modern footer {
+  color: var(--text-subtle);
+}
+
+/* ---------------------------------------------------------------- sidebar */
+
+html.spire-modern #sidebar.navbar-vertical,
+html.spire-modern #sidebar.navbar-vibrant,
+html.spire-modern #sidebar.sidebar-normal,
+html.spire-modern #sidebar.sidebar-admin,
+html.spire-modern .navbar-dark.navbar-vibrant,
+html.spire-modern .navbar {
+  background: var(--sidebar-bg) !important;
+  background-image: none !important;
+  border-right: 1px solid var(--border) !important;
+  opacity: 1 !important;
+}
+
+html.spire-modern #sidebar .navbar-brand-link {
+  display: block;
+  text-decoration: none !important;
+}
+
+html.spire-modern #sidebar .navbar-brand-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 6px 0;
+  font-family: var(--font-brand) !important;
+  font-size: 20px !important;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text) !important;
+  text-shadow: none !important;
+  text-align: left !important;
+  line-height: 1.1;
+}
+
+html.spire-modern #sidebar .navbar-brand-wordmark::before {
+  display: none;
+}
+
+html.spire-modern #sidebar .navbar-brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+html.spire-modern #sidebar a:hover {
+  text-decoration: none;
+}
+
+html.spire-modern #sidebar .navbar-heading {
+  margin: 20px 0 6px !important;
+  padding: 0 12px !important;
+  color: var(--text-subtle) !important;
+  font-size: 11px !important;
+  font-weight: 600;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+html.spire-modern #sidebar .navbar-nav {
+  margin-bottom: 0 !important;
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 1px 0;
+  padding: 6px 12px !important;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted) !important;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  opacity: 1;
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link:hover {
+  background: var(--surface-2);
+  color: var(--text) !important;
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link > i,
+html.spire-modern #sidebar .navbar-nav .nav-link > .fe,
+html.spire-modern #sidebar .navbar-nav .nav-link > .ra,
+html.spire-modern #sidebar .navbar-nav .nav-link > .fa {
+  flex: 0 0 16px;
+  width: 16px;
+  min-width: 16px !important;
+  margin: 0 !important;
+  text-align: center;
+  font-size: 14px !important;
+  color: var(--text-subtle);
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link.active {
+  background: var(--accent-soft);
+  color: var(--text) !important;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link.active > i {
+  color: var(--accent);
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link::before,
+html.spire-modern #sidebar .navbar-nav .nav-link.active::before {
+  display: none !important;
+  border: 0 !important;
+}
+
+/* collapsible section headers (Bots, NPCs...) show open state without the gold highlight */
+html.spire-modern #sidebar .navbar-nav .nav-link[data-toggle="collapse"].active {
+  color: var(--text) !important;
+  background: none;
+  box-shadow: none;
+}
+
+html.spire-modern #sidebar .navbar-nav .nav-link[data-toggle="collapse"]:after {
+  margin-left: auto;
+  color: var(--text-subtle);
+}
+
+html.spire-modern #sidebar .nav-sm {
+  margin: 2px 0 4px 20px;
+  padding-left: 8px;
+  border-left: 1px solid var(--border);
+}
+
+html.spire-modern #sidebar .nav-sm .nav-link {
+  font-size: 13px;
+  padding: 5px 10px !important;
+}
+
+html.spire-modern #sidebar .badge {
+  margin-left: auto !important;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  letter-spacing: .04em;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-subtle);
+}
+
+html.spire-modern #sidebar .badge + .badge {
+  margin-left: 4px !important;
+}
+
+html.spire-modern #sidebar .pulsate-highlight-white {
+  color: var(--accent) !important;
+}
+
+html.spire-modern #sidebar .navbar-user {
+  border-top: 1px solid var(--border) !important;
+}
+
+html.spire-modern #sidebar .navbar-user-link,
+html.spire-modern #sidebar .navbar-toggler {
+  color: var(--text-muted) !important;
+  border-color: var(--border) !important;
+}
+
+html.spire-modern[data-theme="light"] #sidebar .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+html.spire-modern #sidebar .theme-toggle-label {
+  margin-left: auto;
+  color: var(--text-subtle);
+  font-size: 12px;
+}
+
+/* narrow screens: the sidebar folds into a top bar with a menu button, content takes the full width */
+@media (max-width: 767.98px) {
+  html.spire-modern #sidebar.navbar-vertical {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  html.spire-modern #sidebar .navbar-brand-wordmark {
+    margin: 8px 0;
+    font-size: 18px !important;
+  }
+
+  html.spire-modern .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* ---------------------------------------------------------------- shared components used by redesigned pages */
+
+html.spire-modern .ui-chip,
+html.spire-modern [class*="eq-window"] button.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 4px 4px 0;
+  padding: 3px 10px !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-pill) !important;
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  font-size: 12.5px !important;
+  font-weight: 500;
+  line-height: 1.4 !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  overflow: visible !important;
+  transition: background-color .1s ease, border-color .1s ease, color .1s ease;
+}
+
+html.spire-modern .ui-chip-icon {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+html.spire-modern .ui-chip-icon [class*="item-"],
+html.spire-modern .eq-wear-icons [class*="item-"] {
+  display: block !important;
+  margin: 0 !important;
+}
+
+html.spire-modern .eq-wear-icons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+html.spire-modern .ui-chip:hover,
+html.spire-modern [class*="eq-window"] button.ui-chip:hover:not(:disabled) {
+  background: transparent !important;
+  border-color: var(--text-subtle) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+html.spire-modern .ui-chip.is-on,
+html.spire-modern [class*="eq-window"] button.ui-chip.is-on,
+html.spire-modern [class*="eq-window"] button.ui-chip.is-on:hover:not(:disabled) {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--text) !important;
+}
+
+html.spire-modern .ui-chip.is-static {
+  cursor: default;
+}
+
+html.spire-modern .privacy-bar {
+  border-bottom-color: var(--border-subtle);
+}
+
+html.spire-modern .ui-section {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+html.spire-modern .ui-section:first-child {
+  padding-top: 0;
+}
+
+html.spire-modern .ui-section:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+html.spire-modern .ui-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+html.spire-modern .ui-section-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+html.spire-modern .ui-section-links a {
+  color: var(--text-subtle);
+  font-size: 12px;
+  margin-right: var(--space-2);
+}
+
+html.spire-modern .ui-section-links a:hover {
+  color: var(--text);
+}
+
+html.spire-modern .ui-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+html.spire-modern .ui-empty-title {
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+html.spire-modern .ui-problem {
+  margin: 4px 0;
+  padding: 2px 0 2px 10px;
+  border-left: 2px solid var(--danger);
+  color: var(--text);
+  font-size: 12.5px;
+}
+
+html.spire-modern .ui-problem small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+html.spire-modern .ui-stat-line {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+html.spire-modern .ui-stat-line b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+html.spire-modern .tabular {
+  font-variant-numeric: tabular-nums;
+}
+

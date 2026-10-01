@@ -1,6 +1,6 @@
 <template>
   <div>
-    <eq-window class="p-2" style="height: 96vh">
+    <eq-window class="p-2 zone-editor-map-wrap" style="height: 96vh; position: relative;">
 
       <!-- Loader -->
       <eq-window
@@ -14,6 +14,32 @@
         <loader-fake-progress v-if="!isDataLoaded()"/>
         <eq-progress-bar :percent="100" v-if="isDataLoaded()"/>
       </eq-window>
+
+      <div class="zone-editor-map-hud" v-if="isDataLoaded()">
+        <div class="zone-editor-map-hud-row">
+          <label class="mr-2 mb-0">
+            <input type="checkbox" v-model="editLayers.npcs"> NPCs
+          </label>
+          <label class="mr-2 mb-0">
+            <input type="checkbox" v-model="editLayers.doors"> Doors
+          </label>
+          <label class="mr-2 mb-0">
+            <input type="checkbox" v-model="editLayers.teleports"> Teleports
+          </label>
+          <label class="mr-2 mb-0">
+            <input type="checkbox" v-model="editLayers.zonelines"> Zone lines
+          </label>
+          <label class="mr-2 mb-0" v-if="zAbsMax > zAbsMin">
+            <input type="checkbox" v-model="zClip"> Z clip
+          </label>
+          <span class="zone-editor-z-range" v-if="zClip && zAbsMax > zAbsMin">
+            <input type="range" :min="zAbsMin" :max="zAbsMax" step="1" v-model.number="zMin">
+            <input type="range" :min="zAbsMin" :max="zAbsMax" step="1" v-model.number="zMax">
+            <span>{{ zMin }} to {{ zMax }}</span>
+          </span>
+        </div>
+        <div class="zone-editor-mode" v-if="editMode">Edit: click to select, drag to move spawn2</div>
+      </div>
 
       <div class="card">
         <l-map
@@ -32,8 +58,8 @@
 
           <!-- Draw map lines -->
           <l-polyline
-            v-if="lines"
-            :lat-lngs="lines"
+            v-if="visibleLines && visibleLines.length > 0"
+            :lat-lngs="visibleLines"
             color="gray"
             :weight="1"
           />
@@ -78,7 +104,7 @@
             v-for="(m, index) in zonelineMarkers"
             :key="index"
             :lat-lng="m.point"
-            v-if="markers && markers.length > 0"
+            v-if="editLayers.zonelines && zonelineMarkers && zonelineMarkers.length > 0"
             @click="navigateToZone(m.zone.short_name, m.zone.version)"
           >
             <l-tooltip>
@@ -103,23 +129,26 @@
 
           <!-- NPC markers -->
           <l-marker
-            v-for="(marker, index) in npcMarkers"
-            :key="index + '-' + marker.npc.id"
+            v-for="(marker, index) in visibleNpcMarkers"
+            :key="'spawn2-' + marker.spawn2Id + '-npc-' + marker.npc.id + '-' + index + '-' + (editMode ? 'edit' : 'view')"
             :lat-lng="marker.point"
-            :opacity="getNpcOpacity(index + '-' + marker.npc.id, marker.npc.id)"
-            @mouseover="npcMarkerHover(marker, index + '-' + marker.npc.id)"
-            v-if="npcMarkers && npcMarkers.length > 0"
+            :draggable="editMode"
+            :opacity="getNpcOpacity('spawn2-' + marker.spawn2Id + '-npc-' + marker.npc.id + '-' + index, marker.npc.id, marker.spawn2Id)"
+            @mouseover="npcMarkerHover(marker, 'spawn2-' + marker.spawn2Id + '-npc-' + marker.npc.id + '-' + index)"
+            @click="npcMarkerClick(marker, 'spawn2-' + marker.spawn2Id + '-npc-' + marker.npc.id + '-' + index)"
+            @dragstart="onNpcDragStart"
+            @dragend="onNpcDragEnd(marker, $event)"
           >
 
             <l-tooltip>
               <eq-window>
-                {{ getCleanName(marker.npc.name) }}
+                {{ getCleanName(marker.npc.name) }}<span v-if="editMode"> (spawn2 {{ marker.spawn2Id }})</span>
               </eq-window>
             </l-tooltip>
 
             <l-icon
               icon-url="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
-              :class-name="(zoomLevel >= 1) ? marker.iconClass : marker.iconClass + '-sm'"
+              :class-name="npcIconClass(marker)"
               :iconSize="(zoomLevel >= 1) ? marker.iconSize : calcSmallIcons(marker.iconSize)"
             >
             </l-icon>
@@ -131,7 +160,7 @@
             v-for="(marker, index) in doorMarkers"
             :key="index + '-' + marker.name"
             :lat-lng="marker.point"
-            v-if="doorMarkers && doorMarkers.length > 0"
+            v-if="editLayers.doors && doorMarkers && doorMarkers.length > 0"
           >
 
             <l-tooltip>
@@ -154,7 +183,7 @@
             :key="index + '-' + m.label"
             :lat-lng="m.point"
             @mouseover="spellMarkerHover(m.spell)"
-            v-if="translocatePoints && translocatePoints.length > 0"
+            v-if="editLayers.teleports && translocatePoints && translocatePoints.length > 0"
             style="border-radius: 10px"
           >
             <l-tooltip>
@@ -216,6 +245,7 @@ import {Zones}                                               from "../app/zones"
 import {DoorApi}                                             from "../app/api/api/door-api";
 import {EventBus}                                            from "../app/event-bus/event-bus";
 import {Spawn}                                               from "../app/spawn";
+import {eqSpawnToLeaflet, leafletToEqSpawn, roundCoord}      from "../app/eq-coords";
 
 export default {
   name: "EqZoneMap",
@@ -227,6 +257,10 @@ export default {
     version: {
       type: String,
       required: true
+    },
+    editMode: {
+      type: Boolean,
+      default: false
     },
   },
   components: {
@@ -242,6 +276,35 @@ export default {
     LTooltip,
     LTileLayer,
     LPolyline
+  },
+  computed: {
+    visibleLines() {
+      if (!this.mapSegments || this.mapSegments.length === 0) {
+        return this.lines || []
+      }
+      if (!this.zClip) {
+        return this.mapSegments.map((s) => s.latlngs)
+      }
+      const zMin = Math.min(this.zMin, this.zMax)
+      const zMax = Math.max(this.zMin, this.zMax)
+      return this.mapSegments
+        .filter((s) => s.z >= zMin && s.z <= zMax)
+        .map((s) => s.latlngs)
+    },
+    visibleNpcMarkers() {
+      if (!this.editLayers.npcs || !this.npcMarkers) {
+        return []
+      }
+      if (!this.zClip) {
+        return this.npcMarkers
+      }
+      const zMin = Math.min(this.zMin, this.zMax)
+      const zMax = Math.max(this.zMin, this.zMax)
+      return this.npcMarkers.filter((m) => {
+        const z = m.spawn2 && typeof m.spawn2.z === "number" ? m.spawn2.z : 0
+        return z >= zMin && z <= zMax
+      })
+    }
   },
   watch: {
     zone: {
@@ -283,7 +346,15 @@ export default {
 
     },
 
-    getNpcOpacity(elementKey, npcId) {
+    getNpcOpacity(elementKey, npcId, spawn2Id) {
+      if (this.selectedSpawn2Id && spawn2Id === this.selectedSpawn2Id) {
+        return 1;
+      }
+
+      if (this.selectedSpawn2Id && spawn2Id !== this.selectedSpawn2Id) {
+        return .35;
+      }
+
       if (this.zoomedNpcId === npcId) {
         return 1;
       }
@@ -301,6 +372,119 @@ export default {
       }
 
       return 1;
+    },
+
+    npcIconClass(marker) {
+      let cls = (this.zoomLevel >= 1) ? marker.iconClass : marker.iconClass + '-sm'
+      if (this.editMode && this.selectedSpawn2Id && marker.spawn2Id === this.selectedSpawn2Id) {
+        cls += ' zone-editor-selected'
+      }
+      return cls
+    },
+
+    npcMarkerClick(marker, elementKey) {
+      if (this.justDragged) {
+        return
+      }
+      this.selectedSpawn2Id = marker.spawn2Id
+      this.selectedMarkerKey = elementKey
+      this.$emit("npc-marker-select", {
+        npc: marker.npc,
+        spawn2: Object.assign({}, marker.spawn2),
+        markerKey: elementKey
+      })
+      this.npcMarkerHover(marker, elementKey)
+    },
+
+    onNpcDragStart() {
+      this.justDragged = true
+    },
+
+    onNpcDragEnd(marker, event) {
+      this.justDragged = true
+      setTimeout(() => {
+        this.justDragged = false
+      }, 80)
+
+      if (!this.editMode || !event || !event.target || !event.target.getLatLng) {
+        return
+      }
+
+      const ll = event.target.getLatLng()
+      const eq = leafletToEqSpawn(ll.lat, ll.lng)
+      const from = {
+        x: marker.spawn2.x,
+        y: marker.spawn2.y,
+        z: marker.spawn2.z,
+        heading: marker.spawn2.heading
+      }
+      const to = {
+        x: eq.x,
+        y: eq.y,
+        z: marker.spawn2.z,
+        heading: marker.spawn2.heading
+      }
+
+      this.applySpawn2Placement(marker.spawn2Id, to)
+      this.selectedSpawn2Id = marker.spawn2Id
+      this.$emit("spawn2-moved", {
+        id: marker.spawn2Id,
+        from: from,
+        to: to,
+        spawn2: Object.assign({}, marker.spawn2),
+        npc: marker.npc
+      })
+    },
+
+    applySpawn2Placement(spawn2Id, coords) {
+      if (!this.npcMarkers) {
+        return
+      }
+      for (let m of this.npcMarkers) {
+        if (m.spawn2Id !== spawn2Id) {
+          continue
+        }
+        m.spawn2.x = roundCoord(coords.x)
+        m.spawn2.y = roundCoord(coords.y)
+        m.spawn2.z = roundCoord(coords.z)
+        m.spawn2.heading = roundCoord(coords.heading)
+        m.point = eqSpawnToLeaflet(m.spawn2.x, m.spawn2.y)
+      }
+      this.$forceUpdate()
+    },
+
+    clearSpawnSelection() {
+      this.selectedSpawn2Id = 0
+      this.selectedMarkerKey = ""
+    },
+
+    refreshZExtents() {
+      let min = Number.POSITIVE_INFINITY
+      let max = Number.NEGATIVE_INFINITY
+      if (this.mapSegments) {
+        for (let s of this.mapSegments) {
+          if (typeof s.z === "number" && isFinite(s.z)) {
+            min = Math.min(min, s.z)
+            max = Math.max(max, s.z)
+          }
+        }
+      }
+      if (this.npcMarkers) {
+        for (let m of this.npcMarkers) {
+          if (m.spawn2 && typeof m.spawn2.z === "number" && isFinite(m.spawn2.z)) {
+            min = Math.min(min, m.spawn2.z)
+            max = Math.max(max, m.spawn2.z)
+          }
+        }
+      }
+      if (!isFinite(min) || !isFinite(max)) {
+        min = 0
+        max = 0
+      }
+      this.zAbsMin = Math.floor(min)
+      this.zAbsMax = Math.ceil(max)
+      this.zMin = this.zAbsMin
+      this.zMax = this.zAbsMax
     },
 
     // this is not a computed property because the dependencies are not reactive
@@ -458,7 +642,7 @@ export default {
               // console.log(height)
               // console.log(width)
 
-              raceIconSizes[raceClassKey] = [width, height]
+                  raceIconSizes[raceClassKey] = [parseInt(width, 10) || 30, parseInt(height, 10) || 100]
             }
           }
         }
@@ -535,6 +719,7 @@ export default {
       let bounds     = [0, 0, 0, 0];
       let mapLines   = []
       let mapMarkers = []
+      let mapSegments = []
       for (let line of map.split("\n")) {
         const cols = line.replaceAll(",", "").split(/\s+/)
 
@@ -542,8 +727,10 @@ export default {
         if (cols[0].trim() === "L") {
           const x  = cols[1].trim()
           const y  = cols[2].trim()
+          const z1 = cols.length > 3 ? parseFloat(cols[3]) : 0
           const x2 = cols[4].trim()
           const y2 = cols[5].trim()
+          const z2 = cols.length > 6 ? parseFloat(cols[6]) : 0
           const p  = [
             this.createPoint(x, y),
             this.createPoint(x2, y2),
@@ -556,6 +743,10 @@ export default {
           ];
 
           mapLines.push(p)
+          mapSegments.push({
+            latlngs: p,
+            z: ((isFinite(z1) ? z1 : 0) + (isFinite(z2) ? z2 : 0)) / 2
+          })
         }
 
         // points
@@ -575,6 +766,7 @@ export default {
 
       this.markers = mapMarkers
       this.lines   = mapLines
+      this.mapSegments = mapSegments
       this.bounds  = [
         [bounds[0], bounds[1]],
         [bounds[2], bounds[3]]
@@ -709,6 +901,18 @@ export default {
                       label: Npcs.getCleanName(npcName),
                       npc: n,
                       grid: spawn2.pathgrid,
+                      spawn2Id: spawn2.id,
+                      spawn2: {
+                        id: spawn2.id,
+                        x: spawn2.x,
+                        y: spawn2.y,
+                        z: spawn2.z,
+                        heading: spawn2.heading,
+                        zone: spawn2.zone,
+                        version: spawn2.version,
+                        pathgrid: spawn2.pathgrid,
+                        spawngroup_id: spawn2.spawngroup_id
+                      },
                       iconClass: 'fade-in ' + this.getNpcIcon(n),
                       iconSize: this.raceIconSizes[this.getNpcIcon(n)] ? this.raceIconSizes[this.getNpcIcon(n)] : [30, 100]
                     }
@@ -721,11 +925,13 @@ export default {
           this.npcMarkers = npcMarkers
 
           this.$forceUpdate()
-
-          console.timeEnd("[EqZoneMap] loadMapSpawns");
+        } else {
+          this.npcMarkers = []
         }
+        console.timeEnd("[EqZoneMap] loadMapSpawns");
       } catch (err) {
         console.log("map.vue %s", err)
+        this.npcMarkers = this.npcMarkers || []
       }
     },
 
@@ -775,15 +981,20 @@ export default {
       this.pathingGridLines     = []
       this.pathingGridMarkers   = null
       this.pathingGridData      = []
+      this.mapSegments          = []
+      this.selectedSpawn2Id     = 0
+      this.selectedMarkerKey    = ""
 
       // load
       await this.parseRaceIconSizes()
-      this.loadMapLines()
-      this.loadMapSpawns()
+      await this.loadMapLines()
+      await this.loadMapSpawns()
       this.loadDoors()
       this.loadZonePoints()
       this.loadTranslocatePoints()
       this.loadSafeCoordinates()
+      this.refreshZExtents()
+      this.$emit("map-loaded")
 
       this.$forceUpdate()
     }
@@ -796,17 +1007,6 @@ export default {
     EventBus.$off("NPC_ZOOM", this.handleNpcZoomEvent);
   },
   created() {
-    this.zonelineMarkers      = null
-    this.doorZonePoints       = null
-    this.translocatePoints    = null
-    this.npcMarkers           = null
-    this.doorMarkers          = null
-    this.safeCoordinateMarker = null
-    this.pathingGridData      = []
-    this.pathingGridLines     = null
-    this.pathingGridMarkers   = []
-    this.lines                = []
-
     EventBus.$on("NPC_ZOOM", this.handleNpcZoomEvent);
   },
   data() {
@@ -834,8 +1034,33 @@ export default {
       map: "",
 
       markers: null,
+      npcMarkers: null,
+      doorMarkers: null,
+      zonelineMarkers: null,
+      doorZonePoints: null,
+      translocatePoints: null,
+      safeCoordinateMarker: null,
+      pathingGridData: [],
+      pathingGridLines: [],
+      pathingGridMarkers: [],
+      lines: [],
 
-      raceIconSizes: {}
+      raceIconSizes: {},
+      editLayers: {
+        npcs: true,
+        doors: true,
+        teleports: true,
+        zonelines: true
+      },
+      zClip: false,
+      zAbsMin: 0,
+      zAbsMax: 0,
+      zMin: 0,
+      zMax: 0,
+      selectedSpawn2Id: 0,
+      selectedMarkerKey: "",
+      mapSegments: [],
+      justDragged: false
     };
   }
 }
@@ -849,4 +1074,49 @@ export default {
   box-shadow: none;
 }
 
+.zone-editor-map-hud {
+  position: absolute;
+  left: 52px;
+  top: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 78%;
+  padding: 8px 10px;
+  background: rgba(18, 22, 27, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #e7eaef;
+  font-size: 12px;
+  pointer-events: auto;
+}
+
+.zone-editor-map-hud-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.zone-editor-map-hud label {
+  white-space: nowrap;
+}
+
+.zone-editor-mode,
+.zone-editor-z-range {
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+.zone-editor-selected {
+  outline: 3px solid #c9a24a;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.leaflet-marker-draggable {
+  cursor: grab;
+}
 </style>

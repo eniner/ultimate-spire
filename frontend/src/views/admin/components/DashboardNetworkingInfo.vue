@@ -9,7 +9,7 @@
 
         <tr v-for="i in addresses">
           <td class="text-right font-weight-bold">{{ i.key }}</td>
-          <td class="text-left" style="min-width: 160px">
+          <td class="text-left privacy-hide" style="min-width: 160px">
             <a
               href="javascript:"
               @click="copyToClip(i.value)"

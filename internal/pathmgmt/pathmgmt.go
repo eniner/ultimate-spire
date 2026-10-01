@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 type PathManagement struct {
@@ -163,6 +164,9 @@ func (m *PathManagement) GetBackupsDir() string {
 }
 
 func (m *PathManagement) GetQuestsDir() string {
+	if env := strings.TrimSpace(os.Getenv("SPIRE_QUESTS_ROOT")); env != "" {
+		return env
+	}
 	return filepath.Join(m.GetEQEmuServerPath(), questsDir)
 }
 

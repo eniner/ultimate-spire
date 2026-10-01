@@ -45,6 +45,10 @@ import (
 	"github.com/EQEmu/spire/internal/unzip"
 	"github.com/EQEmu/spire/internal/user"
 	"github.com/EQEmu/spire/internal/websocket"
+	"github.com/EQEmu/spire/internal/lantern"
+	"github.com/EQEmu/spire/internal/peqraw"
+	"github.com/EQEmu/spire/internal/serverfiles"
+	"github.com/EQEmu/spire/internal/zoneeditor"
 	"github.com/gertd/go-pluralize"
 )
 
@@ -118,7 +122,11 @@ func InitializeApplication() (App, error) {
 	websocketController := websocket.NewController(pathManagement, handler, clientManager, appLogger)
 	systemController := system.NewController()
 	modelsController := models.NewController()
-	bootAppControllerGroups := provideControllers(helloWorldController, controller, meController, analyticsController, connectionsController, questapiController, appController, queryController, clientfilesController, staticMapController, eqemuanalyticsController, authedController, eqemuchangelogController, assetsController, permissionsController, userController, settingsController, eqemuserverController, publicController, eqemuserverconfigController, backupController, websocketController, systemController, modelsController)
+	zoneeditorController := zoneeditor.NewController(resolver, userEvent)
+	peqrawController := peqraw.NewController(resolver, userEvent)
+	lanternController := lantern.NewController()
+	serverFilesController := serverfiles.NewController(pathManagement, config)
+	bootAppControllerGroups := provideControllers(helloWorldController, controller, meController, analyticsController, connectionsController, questapiController, appController, queryController, clientfilesController, staticMapController, eqemuanalyticsController, authedController, eqemuchangelogController, assetsController, permissionsController, userController, settingsController, eqemuserverController, publicController, eqemuserverconfigController, backupController, websocketController, systemController, modelsController, zoneeditorController, peqrawController, lanternController, serverFilesController)
 	aaAbilityController := crudcontrollers.NewAaAbilityController(resolver, userEvent)
 	aaRankController := crudcontrollers.NewAaRankController(resolver, userEvent)
 	aaRankEffectController := crudcontrollers.NewAaRankEffectController(resolver, userEvent)

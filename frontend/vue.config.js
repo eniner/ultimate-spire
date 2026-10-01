@@ -1,6 +1,8 @@
 const path = require("path");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
+const sageLocal = process.env.SAGE_LOCAL_DEV === "true";
+const sageTarget = sageLocal ? "http://127.0.0.1:4100" : "https://eqsage.vercel.app";
 
 module.exports = {
   devServer: {
@@ -9,20 +11,42 @@ module.exports = {
     watchOptions: {
       ignored: [/node_modules/, /public/],
     },
-    proxy: process.env.SAGE_LOCAL_DEV === 'true' ? {
-      // Local development for EQ sage -- https://gitlab.com/knervous/eq-sage
+    // Sage.vue iframes /eqsage. Production Go proxies that to eqsage.vercel.app.
+    // Local vue-cli did not, so the iframe 404'd unless SAGE_LOCAL_DEV pointed at a
+    // checkout of https://github.com/knervous/eqsage on port 4100.
+    proxy: {
       "^/eqsage": {
         changeOrigin: true,
-        logLevel: 'debug',
-        target: "http://127.0.0.1:4100",
-        pathRewrite: (path) => path.replace(/^\/eqsage/, ""),
+        secure: true,
+        timeout: 120000,
+        proxyTimeout: 120000,
+        logLevel: "warn",
+        target: sageTarget,
+        pathRewrite: (p) => {
+          const next = p.replace(/^\/eqsage/, "");
+          return next.length ? next : "/";
+        },
       },
       "^/static": {
         changeOrigin: true,
-        logLevel: 'debug',
-        target: "http://127.0.0.1:4100",
+        secure: true,
+        timeout: 120000,
+        proxyTimeout: 120000,
+        logLevel: "warn",
+        target: sageTarget,
       },
-    } : null,
+      "^/api": {
+        changeOrigin: true,
+        logLevel: "warn",
+        target: process.env.VUE_APP_BACKEND_BASE_URL || "http://127.0.0.1:3010",
+        ws: true,
+      },
+      "^/auth": {
+        changeOrigin: true,
+        logLevel: "warn",
+        target: process.env.VUE_APP_BACKEND_BASE_URL || "http://127.0.0.1:3010",
+      },
+    },
   },
   // configureWebpack: {
   //   plugins: [

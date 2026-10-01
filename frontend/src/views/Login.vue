@@ -6,10 +6,15 @@
 
         <router-link class="ml-3 mt-3 mb-3" :to="ROUTE.HOME">
           <h1
-            style="font-size: 100px"
-            class="text-center eq-header mb-0"
+            style="font-size: 72px"
+            class="text-center eq-header mb-0 login-brand-wordmark"
           >
-            Spire
+            <img
+              class="login-brand-logo"
+              src="/ultimate-eq-logo.svg"
+              alt="Ultimate EQ"
+            >
+            Ultimate Spire
           </h1>
 
         </router-link>
@@ -276,6 +281,19 @@ body {
   flex-direction: column;
   justify-content: center;
   min-height: 100vh;
+}
+
+.login-brand-wordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.login-brand-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
 }
 
 </style>

@@ -24,6 +24,10 @@ import (
 	"github.com/EQEmu/spire/internal/system"
 	"github.com/EQEmu/spire/internal/user"
 	"github.com/EQEmu/spire/internal/websocket"
+	"github.com/EQEmu/spire/internal/lantern"
+	"github.com/EQEmu/spire/internal/peqraw"
+	"github.com/EQEmu/spire/internal/serverfiles"
+	"github.com/EQEmu/spire/internal/zoneeditor"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -62,6 +66,10 @@ var httpSet = wire.NewSet(
 	backup.NewController,
 	system.NewController,
 	models.NewController,
+	zoneeditor.NewController,
+	peqraw.NewController,
+	lantern.NewController,
+	serverfiles.NewController,
 	provideControllers,
 	NewRouter,
 )
@@ -197,6 +205,10 @@ func provideControllers(
 	websocketController *websocket.Controller,
 	systemController *system.Controller,
 	modelController *models.Controller,
+	zoneEditorController *zoneeditor.Controller,
+	peqRawController *peqraw.Controller,
+	lanternController *lantern.Controller,
+	serverFilesController *serverfiles.Controller,
 ) *appControllerGroups {
 	return &appControllerGroups{
 		authControllers: []routes.Controller{
@@ -220,6 +232,10 @@ func provideControllers(
 			websocketController,
 			systemController,
 			authedAnalyticsController,
+			zoneEditorController,
+			peqRawController,
+			lanternController,
+			serverFilesController,
 		},
 		v1controllersNoAuth: []routes.Controller{
 			quest,

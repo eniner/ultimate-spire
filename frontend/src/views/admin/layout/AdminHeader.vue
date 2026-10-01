@@ -118,7 +118,7 @@
                 style="line-height: .8 !important"
               >
                   <span
-                    :class="' font-weight-bold' + (typeof metric.percent === 'undefined' ? '' : 'small text-muted')"
+                    :class="(metric.label === 'Host' ? 'privacy-hide ' : '') + ' font-weight-bold' + (typeof metric.percent === 'undefined' ? '' : 'small text-muted')"
                     style="font-size: 10px;"
                   >
                     {{ metric.value }}

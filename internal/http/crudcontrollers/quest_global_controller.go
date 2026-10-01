@@ -119,12 +119,7 @@ func (e *QuestGlobalController) getQuestGlobal(c echo.Context) error {
 
 	// key param [name] position [4] type [varchar]
 	if len(c.QueryParam("name")) > 0 {
-		nameParam, err := strconv.Atoi(c.QueryParam("name"))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error parsing query param [name] err [%s]", err.Error())})
-		}
-
-		params = append(params, nameParam)
+		params = append(params, c.QueryParam("name"))
 		keys = append(keys, "name = ?")
 	}
 
@@ -206,12 +201,7 @@ func (e *QuestGlobalController) updateQuestGlobal(c echo.Context) error {
 
 	// key param [name] position [4] type [varchar]
 	if len(c.QueryParam("name")) > 0 {
-		nameParam, err := strconv.Atoi(c.QueryParam("name"))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error parsing query param [name] err [%s]", err.Error())})
-		}
-
-		params = append(params, nameParam)
+		params = append(params, c.QueryParam("name"))
 		keys = append(keys, "name = ?")
 	}
 
@@ -356,12 +346,7 @@ func (e *QuestGlobalController) deleteQuestGlobal(c echo.Context) error {
 
 	// key param [name] position [4] type [varchar]
 	if len(c.QueryParam("name")) > 0 {
-		nameParam, err := strconv.Atoi(c.QueryParam("name"))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error parsing query param [name] err [%s]", err.Error())})
-		}
-
-		params = append(params, nameParam)
+		params = append(params, c.QueryParam("name"))
 		keys = append(keys, "name = ?")
 	}
 

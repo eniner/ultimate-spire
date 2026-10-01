@@ -27,12 +27,14 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <router-link class="ml-3 mt-3" to="/">
-        <h1 class="text-center eq-header small-mobile">
-          Spire
-          <!--          <h3 class="text-center eq-header small-mobile d-inline" style="font-size: 40px">-->
-          <!--            [Admin]-->
-          <!--          </h3>-->
+      <router-link class="navbar-brand-link ml-3 mt-3" to="/">
+        <h1 class="eq-header small-mobile navbar-brand-wordmark">
+          <img
+            class="navbar-brand-logo"
+            src="/ultimate-eq-logo.svg"
+            alt="Ultimate EQ"
+          >
+          Ultimate Spire
         </h1>
       </router-link>
 
@@ -91,13 +93,64 @@
 
         <div v-if="!isInAdmin()">
           <h6 class="navbar-heading">
-            Content Tools
+            Game Data
           </h6>
 
           <ul class="navbar-nav mb-md-3">
-            <nav-section-component :config="botNav"/>
-            <nav-section-component :config="calculatorNav"/>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/editors">
+                <i class="ra ra-book mr-1"></i> PEQ Editors
+                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
+              </router-link>
+            </li>
 
+            <li class="nav-item">
+              <router-link class="nav-link " to="/items" exact>
+                <i class="ra ra-relic-blade mr-1"></i> Items
+                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link " to="/items/evolving">
+                <i class="ra ra-cycle mr-1"></i> Evolving Items
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link " to="/spells">
+                <i class="ra ra-book mr-1"></i> Spells
+                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
+              </router-link>
+            </li>
+
+            <nav-section-component :config="npcNav"/>
+            <nav-section-component :config="botNav"/>
+            <nav-section-component :config="peqNav"/>
+            <nav-section-component :config="charsNav"/>
+
+            <li class="nav-item">
+              <router-link class="nav-link " to="/tasks">
+                <i class="ra ra-zebra-shield mr-1"></i> Tasks
+                <b-badge class="ml-3" variant="primary">BETA</b-badge>
+                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link " to="/zones">
+                <i class="ra ra-wooden-sign mr-2"></i> Zones
+                <b-badge class="ml-3" variant="primary">ALPHA</b-badge>
+                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
+              </router-link>
+            </li>
+          </ul>
+
+          <h6 class="navbar-heading">
+            Client
+          </h6>
+
+          <ul class="navbar-nav mb-md-3">
             <li class="nav-item">
               <router-link class="nav-link" to="/client-files">
                 <i class="ra ra-cycle mr-1"></i> Client File
@@ -106,13 +159,20 @@
             </li>
 
             <li class="nav-item">
-              <router-link class="nav-link " to="/items">
-                <i class="ra ra-relic-blade mr-1"></i> Items
+              <router-link class="nav-link " to="/strings-database">
+                <i class="ra  ra-scroll-unfurled mr-1"></i> Strings DB
                 <b-badge class="ml-3" variant="primary">NEW!</b-badge>
               </router-link>
             </li>
+          </ul>
 
-            <nav-section-component :config="npcNav"/>
+          <h6 class="navbar-heading">
+            Tools
+          </h6>
+
+          <ul class="navbar-nav mb-md-3">
+            <nav-section-component :config="calculatorNav"/>
+            <nav-section-component :config="viewerNav"/>
 
             <li class="nav-item">
               <router-link class="nav-link " to="/quest-api-explorer">
@@ -126,36 +186,6 @@
                 <b-badge class="ml-3" variant="primary">NEW!</b-badge>
               </router-link>
             </li>
-
-            <li class="nav-item">
-              <router-link class="nav-link " to="/strings-database">
-                <i class="ra  ra-scroll-unfurled mr-1"></i> Strings DB
-                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link " to="/spells">
-                <i class="ra ra-book mr-1"></i> Spells
-                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link class="nav-link " to="/tasks">
-                <i class="ra ra-zebra-shield mr-1"></i> Tasks
-                <b-badge class="ml-3" variant="primary">BETA</b-badge>
-                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
-              </router-link>
-            </li>
-            <nav-section-component :config="viewerNav"/>
-
-            <li class="nav-item">
-              <router-link class="nav-link " to="/zones">
-                <i class="ra ra-wooden-sign mr-2"></i> Zones
-                <b-badge class="ml-3" variant="primary">ALPHA</b-badge>
-                <b-badge class="ml-3" variant="primary">NEW!</b-badge>
-              </router-link>
-            </li>
-
           </ul>
 
           <!-- Heading -->
@@ -216,6 +246,13 @@
             <a href="#" class="nav-link" data-toggle="modal" @click="openSearch()">
               <i class="fe fe-search mr-2"></i>
               Nav Search (Ctrl + K)
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" @click.prevent="cycleTheme()" title="Classic is original Spire. Light and Dark are the modern UI.">
+              <i :class="'fe ' + themeIcon + ' mr-2'"></i>
+              Theme
+              <span class="theme-toggle-label">{{ themeLabel }}</span>
             </a>
           </li>
         </ul>
@@ -284,6 +321,7 @@ import DbConnectionStatusPill from "@/components/DbConnectionStatusPill";
 import {SpireApi}             from "@/app/api/spire-api";
 import {LocalSettings}        from "@/app/local-settings/localsettings";
 import semver                 from "semver";
+import {Theme}                from "@/app/theme";
 
 export default {
   computed: {
@@ -300,7 +338,16 @@ export default {
       }
 
       return semver.gt(this.latestAppVersion, this.appVersion)
-    }
+    },
+    themeLabel() {
+      return {classic: "Classic", light: "Light", dark: "Dark"}[this.themeMode] || "Dark"
+    },
+    themeIcon() {
+      if (this.themeMode === "classic") {
+        return "fe-grid"
+      }
+      return this.themeResolved === "dark" ? "fe-moon" : "fe-sun"
+    },
   },
   components: { DbConnectionStatusPill, NavSectionComponent, NavbarDropdownMenu, NavbarUserSettingsCog },
   data() {
@@ -312,6 +359,8 @@ export default {
       backendBaseUrl: "",
       user: null,
       hideNavbar: false,
+      themeMode: Theme.getMode(),
+      themeResolved: Theme.resolved(),
       appEnv: AppEnv.getEnv(),
       appVersion: AppEnv.getVersion(),
       latestAppVersion: LocalSettings.getLatestUpdateVersion(),
@@ -360,14 +409,98 @@ export default {
             isNew: true,
             routes: ['npc-spells']
           },
-          // {
-          //   title: "Loot",
-          //   to: ROUTE.LOOT,
-          //   icon: "ra ra-sword mr-1",
-          //   isAlpha: true,
-          //   isNew: true,
-          //   routes: ['loot']
-          // },
+          {
+            title: "Loot",
+            to: ROUTE.LOOT,
+            icon: "ra ra-sword mr-1",
+            isAlpha: true,
+            isNew: true,
+            routes: ['loot']
+          },
+        ]
+      },
+      peqNav: {
+        label: "World",
+        labelIcon: "ra ra-wooden-sign mr-1",
+        routePrefixMatches: ["editors"],
+        navs: [
+          {
+            title: "Spawns",
+            to: "/editors/spawns",
+            icon: "ra ra-player mr-1",
+            isNew: true,
+            routes: ['editors/spawns']
+          },
+          {
+            title: "Factions",
+            to: "/editors/factions",
+            icon: "ra ra-crossed-swords mr-1",
+            isNew: true,
+            routes: ['editors/factions']
+          },
+          {
+            title: "Tradeskills",
+            to: "/editors/tradeskills",
+            icon: "ra ra-anvil mr-1",
+            isNew: true,
+            routes: ['editors/tradeskills']
+          },
+          {
+            title: "Doors",
+            to: "/editors/doors",
+            icon: "ra ra-key mr-1",
+            isNew: true,
+            routes: ['editors/doors']
+          },
+        ]
+      },
+      charsNav: {
+        label: "Characters",
+        labelIcon: "ra ra-player mr-1",
+        routePrefixMatches: ["editors/players", "editors/accounts", "editors/guilds", "editors/inventory", "editors/mail"],
+        navs: [
+          {
+            title: "Players",
+            to: "/editors/players",
+            icon: "ra ra-player mr-1",
+            isNew: true,
+            routes: ['editors/players']
+          },
+          {
+            title: "Accounts",
+            to: "/editors/accounts",
+            icon: "fa fa-user mr-1",
+            isNew: true,
+            routes: ['editors/accounts']
+          },
+          {
+            title: "Guilds",
+            to: "/editors/guilds",
+            icon: "ra ra-double-team mr-1",
+            isNew: true,
+            routes: ['editors/guilds']
+          },
+          {
+            title: "Inventory",
+            to: "/editors/inventory",
+            icon: "ra ra-hand mr-1",
+            isNew: true,
+            routes: ['editors/inventory']
+          },
+          {
+            title: "Inventory rows",
+            to: "/editors/inventory-raw",
+            icon: "fa fa-table mr-1",
+            isNew: true,
+            routes: ['editors/inventory-raw']
+          },
+          {
+            title: "Mail",
+            to: "/editors/mail",
+            icon: "fa fa-envelope mr-1",
+            isNew: true,
+            routes: ['editors/mail']
+          },
         ]
       },
       adminNavs: [
@@ -376,6 +509,7 @@ export default {
         { label: "Zone Servers", labelIcon: "ra ra-tower mr-1", to: ROUTE.ADMIN_ZONE_SERVERS },
         { label: "Backups", labelIcon: "fa fa-download mr-1", to: ROUTE.ADMIN_BACKUPS },
         { label: "Client Files", labelIcon: "fa fa-download mr-1", to: ROUTE.ADMIN_CLIENT_FILE_DOWNLOADS },
+        { label: "Server Files", labelIcon: "fa fa-folder-open mr-1", to: ROUTE.ADMIN_SERVER_FILES },
         {
           label: "Configuration",
           labelIcon: "fa fa-cog mr-1",
@@ -393,6 +527,7 @@ export default {
               to: ROUTE.ADMIN_CONFIG_QUEST_HOT_RELOAD,
               icon: "ra ra-alien-fire mr-1"
             },
+            { title: "Server Files", to: ROUTE.ADMIN_SERVER_CONFIG + "?s=Server+Files", icon: "fa fa-folder-open mr-1" },
             { title: "Server Rules", to: ROUTE.ADMIN_CONFIG_SERVER_RULES, icon: "ra ra-interdiction mr-1" },
             { title: "UCS", to: ROUTE.ADMIN_SERVER_CONFIG + '?s=UCS', icon: "ra ra-speech-bubbles mr-1", exact: true },
             {
@@ -551,6 +686,11 @@ export default {
 
   methods: {
 
+    cycleTheme() {
+      this.themeMode     = Theme.cycle()
+      this.themeResolved = Theme.resolved()
+    },
+
     updateSpire() {
       this.$bvModal.show('app-update-modal')
     },
@@ -617,6 +757,8 @@ export default {
         this.adminNavs,
         [this.botNav],
         [this.npcNav],
+        [this.peqNav],
+        [this.charsNav],
         [this.viewerNav],
         [this.spireApiNav],
         [this.componentNavs],
@@ -631,11 +773,21 @@ export default {
         { name: "Coffee", route: ROUTE.COFFEE },
         { name: "Tasks", route: ROUTE.TASKS },
         { name: "Items", route: ROUTE.ITEMS_LIST },
+        { name: "Evolving Items", route: ROUTE.ITEMS_EVOLVING },
         { name: "Spells", route: ROUTE.SPELLS_LIST },
         { name: "[Quest API] Explorer", route: ROUTE.QUEST_API_EXPLORER },
         { name: "[Quest API] Explorer (Perl)", route: `${ROUTE.QUEST_API_EXPLORER}?lang=perl` },
         { name: "[Quest API] Explorer (Lua)", route: `${ROUTE.QUEST_API_EXPLORER}?lang=lua` },
         { name: "Zones", route: ROUTE.ZONES },
+        { name: "PEQ Editors", route: ROUTE.EDITORS },
+        { name: "Loot", route: ROUTE.LOOT },
+        { name: "Factions", route: "/editors/factions" },
+        { name: "Spawns", route: "/editors/spawns" },
+        { name: "Tradeskills", route: "/editors/tradeskills" },
+        { name: "Players", route: "/editors/players" },
+        { name: "Accounts", route: "/editors/accounts" },
+        { name: "Guilds", route: "/editors/guilds" },
+        { name: "Utilities", route: "/editors/util" },
       ]
 
       for (let m of manualRoutes) {

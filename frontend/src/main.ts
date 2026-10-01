@@ -46,6 +46,18 @@ Vue.use(BootstrapVue)
 import 'leaflet/dist/leaflet.css';
 import { Icon } from 'leaflet';
 
+// modern theme - loaded last so it overrides the EQ-styled sheets above
+import '@fontsource/inter/400.css'
+import '@fontsource/inter/500.css'
+import '@fontsource/inter/600.css'
+import '@fontsource/source-serif-4/600.css'
+import './assets/css/spire-modern.css'
+import {Theme} from "@/app/theme";
+import {Privacy} from "@/app/privacy";
+
+Theme.init()
+Privacy.init()
+
 // @ts-ignore
 delete Icon.Default.prototype._getIconUrl;
 Icon.Default.mergeOptions({

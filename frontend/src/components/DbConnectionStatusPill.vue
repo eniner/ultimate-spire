@@ -21,7 +21,7 @@
           class="avatar-img rounded-circle"
         >
       </div>
-      <i class="fe fe-database"></i> {{ connection.database_connection.name }}
+      <i class="fe fe-database"></i> <span class="privacy-hide">{{ connection.database_connection.name }}</span>
     </div>
   </div>
 </template>
@@ -31,6 +31,7 @@ import {SpireApi} from "@/app/api/spire-api";
 import {EventBus} from "@/app/event-bus/event-bus";
 import {ROUTE}    from "@/routes";
 import util       from "util";
+import {Privacy}  from "@/app/privacy";
 
 export default {
   name: "DbConnectionStatusPill",
@@ -53,6 +54,9 @@ export default {
 
   methods: {
     getConnectionDescription() {
+      if (Privacy.isOn()) {
+        return "Database connection"
+      }
       return util.format(
         "Host: %s Status: %s",
         this.connection.database_connection.db_host,

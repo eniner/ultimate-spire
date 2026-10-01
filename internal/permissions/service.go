@@ -80,6 +80,8 @@ func (s *Service) RegisterManualResources() map[string][]string {
 		},
 		"Spire Settings": {"spire/setting"},
 		"Server Player Event ETL Settings": {"eqemuserver/player-event-logs/etl-settings"},
+		"Zone Editor":    {"zone-editor"},
+		"PEQ Raw Tables": {"peq-raw"},
 	}
 }
 

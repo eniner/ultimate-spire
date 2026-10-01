@@ -188,11 +188,19 @@ type EQEmuConfigJson struct {
 	} `json:"server"`
 	WebAdmin *WebAdminConfig `json:"web-admin,omitempty"`
 	Spire    struct {
-		EncryptionKey      string `json:"encryption_key,omitempty"`
-		HttpPort           int    `json:"http_port,omitempty"`
-		LauncherStart      bool   `json:"launcher_start"`                 // starts server launcher
-		DisableAutoUpdates bool   `json:"disable_auto_updates,omitempty"` // disable auto updates
+		EncryptionKey      string            `json:"encryption_key,omitempty"`
+		HttpPort           int               `json:"http_port,omitempty"`
+		LauncherStart      bool              `json:"launcher_start"`                 // starts server launcher
+		DisableAutoUpdates bool              `json:"disable_auto_updates,omitempty"` // disable auto updates
+		Files              *SpireFilesConfig `json:"files,omitempty"`
 	} `json:"spire,omitempty"`
+}
+
+// SpireFilesConfig points Spire at a local folder or HTTP(S) file host
+// so quest and other server files can be opened from the admin UI.
+type SpireFilesConfig struct {
+	Source string `json:"source,omitempty"` // local | http
+	Root   string `json:"root,omitempty"`
 }
 
 var cachedConfig *EQEmuConfigJson

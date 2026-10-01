@@ -2,6 +2,22 @@
   <eq-window
     title="Server Configuration"
   >
+    <div class="privacy-bar">
+      <div class="custom-control custom-switch mb-0">
+        <input
+          class="custom-control-input"
+          id="privacy-mode"
+          type="checkbox"
+          :checked="privacyOn"
+          @change="setPrivacy($event.target.checked)"
+        >
+        <label class="custom-control-label" for="privacy-mode">Hide private details</label>
+      </div>
+      <span class="text-muted small">
+        For streams and screenshots. Blurs server names, addresses, keys, passwords, hosts, and file paths.
+      </span>
+    </div>
+
     <eq-tabs
       :selected="tabSelected"
       @on-selected="tabSelected = $event; updateQueryState()"
@@ -17,13 +33,13 @@
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label class="form-label">Server Long Name</label>
-                <input type="text" class="form-control" v-model="config.server.world.longname"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.world.longname"/>
                 <small class="form-text text-muted mt-3">Displays on the Loginserver</small>
               </div>
 
               <div class="form-group col-md-6">
                 <label class="form-label">Server Short Name</label>
-                <input type="text" class="form-control" v-model="config.server.world.shortname"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.world.shortname"/>
                 <small class="form-text text-muted mt-3">Used in the client .ini configuration files</small>
               </div>
             </div>
@@ -34,7 +50,7 @@
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label class="form-label">Public Address</label>
-                <input type="text" class="form-control" v-model="config.server.world.address"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.world.address"/>
                 <small class="form-text mt-3 eq-alert">If your server is on the internet, you will need to specify your
                   public address. When on a LAN behind a NAT you will need both this and <b>localaddress</b> set
                 </small>
@@ -42,7 +58,7 @@
 
               <div class="form-group col-md-6">
                 <label class="form-label">Local Address</label>
-                <input type="text" class="form-control" v-model="config.server.world.localaddress"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.world.localaddress"/>
                 <small class="form-text mt-3 eq-alert">If you are on a LAN you will need this address set to the local
                   address of your host so that others on your network can properly be routed to your gameserver. Do not
                   use 127.0.0.1</small>
@@ -55,7 +71,7 @@
               <label class="form-label">Server Key</label>
 
               <div class="input-group">
-                <input type="text" class="form-control" v-model="config.server.world.key"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.world.key"/>
                 <span class="input-group-append">
               <button class="btn btn-light btn-sm" type="button" @click="generateRandomKey()"><i
                 class="fa fa-history pr-1"
@@ -94,7 +110,8 @@
               <div class="form-group col-md-6" v-show="config.server.world.telnet.enabled">
                 <label class="form-label">Telnet IP</label>
                 <input
-                  type="text" class="form-control"
+                  type="text"
+                  class="form-control privacy-hide"
                   v-model="config.server.world.telnet.ip"
                 />
                 <small class="form-text text-muted mt-3">
@@ -121,7 +138,8 @@
               <div class="form-group col-md-6">
                 <label class="form-label">IP</label>
                 <input
-                  type="text" class="form-control"
+                  type="text"
+                  class="form-control privacy-hide"
                   v-model="config.server.world.tcp.ip"
                 />
                 <small class="form-text text-muted mt-3">IP address to world to listen on. (0.0.0.0) works in most
@@ -148,7 +166,8 @@
               <div class="form-group col-md-4">
                 <label class="form-label">Loginserver Host</label>
                 <input
-                  type="text" class="form-control"
+                  type="text"
+                  class="form-control privacy-hide"
                   v-model="config.server.world['loginserver' + i].host"
                 />
                 <small class="form-text text-muted mt-3">Loginserver host your server is connecting to</small>
@@ -175,7 +194,8 @@
               <div class="form-group col-md-6">
                 <label class="form-label">Loginserver Account</label>
                 <input
-                  type="text" class="form-control"
+                  type="text"
+                  class="form-control privacy-hide"
                   v-model="config.server.world['loginserver' + i].account"
                 />
                 <small class="form-text text-muted mt-3">Used to authenticate your server as a registered server</small>
@@ -185,7 +205,7 @@
                 <label class="form-label">Loginserver Password</label>
                 <div class="input-group">
                   <input
-                    :type="passwordFieldType" class="form-control"
+                    :type="passwordFieldType" class="form-control privacy-hide"
                     v-model="config.server.world['loginserver' + i].password"
                   />
                   <span class="input-group-append">
@@ -244,7 +264,9 @@
           <div class="form-group col-md-6">
             <label class="form-label">Host</label>
             <input
-              type="text" class="form-control" placeholder="0.0.0.0"
+              type="text"
+              class="form-control privacy-hide"
+              placeholder="0.0.0.0"
               v-model="config.server.ucs.host"
             />
           </div>
@@ -265,12 +287,12 @@
             <div class="form-row">
               <div class="form-group col-md-4">
                 <label class="form-label">Database Name</label>
-                <input type="text" class="form-control" v-model="config.server.database.db"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.database.db"/>
               </div>
 
               <div class="form-group col-md-4">
                 <label class="form-label">Database Host</label>
-                <input type="text" class="form-control" v-model="config.server.database.host"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.database.host"/>
               </div>
 
               <div class="form-group col-md-4">
@@ -282,7 +304,7 @@
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label class="form-label">Database Username</label>
-                <input type="text" class="form-control" v-model="config.server.database.username"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.database.username"/>
               </div>
 
               <div class="form-group col-md-6">
@@ -290,7 +312,7 @@
 
                 <div class="input-group">
                   <input
-                    :type="passwordFieldType" class="form-control"
+                    :type="passwordFieldType" class="form-control privacy-hide"
                     v-model="config.server.database.password"
                   />
                   <span class="input-group-append">
@@ -318,12 +340,12 @@
             <div class="form-row mt-3">
               <div class="form-group col-md-4">
                 <label class="form-label">Database Name</label>
-                <input type="text" class="form-control" v-model="config.server.content_database.db"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.content_database.db"/>
               </div>
 
               <div class="form-group col-md-4">
                 <label class="form-label">Database Host</label>
-                <input type="text" class="form-control" v-model="config.server.content_database.host"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.content_database.host"/>
               </div>
 
               <div class="form-group col-md-4">
@@ -335,7 +357,7 @@
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label class="form-label">Database Username</label>
-                <input type="text" class="form-control" v-model="config.server.content_database.username"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.content_database.username"/>
               </div>
 
               <div class="form-group col-md-6">
@@ -343,7 +365,7 @@
 
                 <div class="input-group">
                   <input
-                    :type="passwordFieldType" class="form-control"
+                    :type="passwordFieldType" class="form-control privacy-hide"
                     v-model="config.server.content_database.password"
                   />
                   <span class="input-group-append">
@@ -368,12 +390,12 @@
             <div class="form-row mt-3">
               <div class="form-group col-md-4">
                 <label class="form-label">Database Name</label>
-                <input type="text" class="form-control" v-model="config.server.qsdatabase.db"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.qsdatabase.db"/>
               </div>
 
               <div class="form-group col-md-4">
                 <label class="form-label">Database Host</label>
-                <input type="text" class="form-control" v-model="config.server.qsdatabase.host"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.qsdatabase.host"/>
               </div>
 
               <div class="form-group col-md-4">
@@ -385,7 +407,7 @@
             <div class="form-row">
               <div class="form-group col-md-6">
                 <label class="form-label">Database Username</label>
-                <input type="text" class="form-control" v-model="config.server.qsdatabase.username"/>
+                <input type="text" class="form-control privacy-hide" v-model="config.server.qsdatabase.username"/>
               </div>
 
               <div class="form-group col-md-6">
@@ -393,7 +415,7 @@
 
                 <div class="input-group">
                   <input
-                    :type="passwordFieldType" class="form-control"
+                    :type="passwordFieldType" class="form-control privacy-hide"
                     v-model="config.server.qsdatabase.password"
                   />
                   <span class="input-group-append">
@@ -410,6 +432,10 @@
         </eq-tabs>
 
 
+      </eq-tab>
+
+      <eq-tab class="fade-in" name="Server Files">
+        <server-files embedded/>
       </eq-tab>
 
       <div class="row">
@@ -451,10 +477,12 @@ import {SpireApi}      from "@/app/api/spire-api";
 import InfoErrorBanner from "@/components/InfoErrorBanner.vue";
 import EqWindowComplex from "@/components/eq-ui/EQWindowComplex.vue";
 import {AppEnv}        from "@/app/env/app-env";
+import ServerFiles     from "@/views/admin/ServerFiles.vue";
+import {Privacy}       from "@/app/privacy";
 
 export default {
   name: "ServerConfig",
-  components: { EqWindowComplex, InfoErrorBanner, EqTab, EqTabs, EqWindow },
+  components: { ServerFiles, EqWindowComplex, InfoErrorBanner, EqTab, EqTabs, EqWindow },
   data() {
     return {
       config: {
@@ -468,13 +496,19 @@ export default {
 
       maxLoginServers: 5,
 
-      passwordFieldType: 'password',
+      passwordVisible: false,
+      privacyOn: Privacy.isOn(),
       loaded: false,
 
       // notification / errors
       notification: "",
       error: "",
     }
+  },
+  computed: {
+    passwordFieldType() {
+      return this.privacyOn || !this.passwordVisible ? "password" : "text"
+    },
   },
   watch: {
     '$route'() {
@@ -629,13 +663,28 @@ export default {
         await SpireApi.v1().post('app/sync')
       }
     },
+    setPrivacy(on) {
+      Privacy.setOn(!!on)
+      this.privacyOn = Privacy.isOn()
+    },
     switchPasswordVisibility() {
-      this.passwordFieldType = this.passwordFieldType === 'password' ? 'text' : 'password'
+      if (this.privacyOn) {
+        return
+      }
+      this.passwordVisible = !this.passwordVisible
     }
   }
 }
 </script>
 
 <style scoped>
-
+.privacy-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
 </style>

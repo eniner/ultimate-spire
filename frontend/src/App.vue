@@ -63,7 +63,6 @@ export default {
 
     this.loadCssFiles();
     this.loadKeypressBindings();
-    this.loadWallpaper();
     this.loadSpellIconSettings();
 
     if (typeof AppEnv.getOS() === "undefined") {

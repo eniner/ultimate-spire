@@ -91,7 +91,7 @@
               <input
                 @change="updateWebhook(w)"
                 type="text"
-                class="form-control"
+                class="form-control privacy-hide"
                 v-model="w.webhook_url"
               >
             </td>

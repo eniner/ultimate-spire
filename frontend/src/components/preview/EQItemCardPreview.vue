@@ -40,7 +40,42 @@
 
             <tr v-for="(value, stat) in toplevel">
               <td v-if="value !== '' && value !== 0">
-                {{ stat }}: {{ value }}
+                <template v-if="stat === 'Class' && wearClassIcons.length">
+                  Class:
+                  <span class="eq-wear-icons">
+                    <span
+                      v-for="c in wearClassIcons"
+                      :key="'c' + c.id"
+                      :class="'item-' + c.icon + '-sm'"
+                      :title="c.name"
+                    ></span>
+                  </span>
+                </template>
+                <template v-else-if="stat === 'Race' && wearRaceIcons.length">
+                  Race:
+                  <span class="eq-wear-icons">
+                    <span
+                      v-for="r in wearRaceIcons"
+                      :key="'r' + r.id"
+                      :class="'item-' + r.icon + '-sm'"
+                      :title="r.name"
+                    ></span>
+                  </span>
+                </template>
+                <template v-else-if="stat === 'Deity' && wearDeityIcons.length">
+                  Deity:
+                  <span class="eq-wear-icons">
+                    <span
+                      v-for="d in wearDeityIcons"
+                      :key="'d' + d.id"
+                      :class="'item-' + d.icon + '-sm'"
+                      :title="d.name"
+                    ></span>
+                  </span>
+                </template>
+                <template v-else>
+                  {{ stat }}: {{ value }}
+                </template>
               </td>
             </tr>
 
@@ -534,6 +569,7 @@ import util                                from "util";
 import {ROUTE}                             from "@/routes";
 import EqCashDisplay                       from "@/components/eq-ui/EqCashDisplay";
 import {Items}                             from "@/app/items";
+import {itemClassIcons, itemDeityIcons, itemRaceIcons} from "@/app/eq-chip-icons";
 import {FactionListApi}                    from "@/app/api/api/faction-list-api";
 import {SpireApi}                          from "@/app/api/spire-api";
 import {Zones}                             from "@/app/zones";
@@ -617,6 +653,17 @@ export default {
       startingItems: []
       // augslots: {}
     }
+  },
+  computed: {
+    wearClassIcons() {
+      return itemClassIcons(this.itemData && this.itemData.classes)
+    },
+    wearRaceIcons() {
+      return itemRaceIcons(this.itemData && this.itemData.races)
+    },
+    wearDeityIcons() {
+      return itemDeityIcons(this.itemData && this.itemData.deity)
+    },
   },
   methods: {
 
@@ -1116,6 +1163,19 @@ export default {
 
 .item-preview-table th, td {
   word-wrap: break-word;
+}
+
+.eq-wear-icons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  vertical-align: middle;
+}
+
+.eq-wear-icons [class*="item-"] {
+  display: block !important;
+  margin: 0 !important;
 }
 
 </style>

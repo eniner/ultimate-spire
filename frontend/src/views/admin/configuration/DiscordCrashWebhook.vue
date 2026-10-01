@@ -27,7 +27,7 @@
 
         <input
           type="text"
-          class="form-control mt-3"
+          class="form-control mt-3 privacy-hide"
           placeholder="https://discord.com/api/webhooks/xxx/xxx"
           v-model="serverConfig['web-admin'].discord.crash_log_webhook"
         />

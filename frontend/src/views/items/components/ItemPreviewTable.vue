@@ -58,6 +58,17 @@
               </router-link>
 
               <router-link
+                :to="ROUTE.ITEM_EDIT_CLASSIC.replace('%s', item.id)"
+                size="sm"
+                tag="button"
+                style="width: 28px; height: 28px"
+                title="PEQ Form"
+                class="btn btn-sm btn-outline-warning mr-2"
+              >
+                <i class="fa fa-list-alt"></i>
+              </router-link>
+
+              <router-link
                 :to="ROUTE.ITEM_EDIT.replace('%s', item.id) + '?clone=true'"
                 size="sm"
                 tag="button"
@@ -85,7 +96,17 @@
             <td>{{ commify(item.hp) }}</td>
             <td>{{ commify(item.mana) }}</td>
             <td>{{ commify(item.endur) }}</td>
-            <td class="text-left">{{ getClasses(item) }}</td>
+            <td class="text-left">
+              <span v-if="item.classes >= 65535">ALL</span>
+              <span v-else class="eq-wear-icons" :title="getClasses(item)">
+                <span
+                  v-for="c in classIcons(item)"
+                  :key="c.id"
+                  :class="'item-' + c.icon + '-sm'"
+                  :title="c.name"
+                ></span>
+              </span>
+            </td>
 
           </tr>
           </tbody>
@@ -104,6 +125,7 @@ import Tablesort from "@/app/utility/tablesort.js";
 import ItemPopover from "@/components/ItemPopover";
 import {Items} from "@/app/items";
 import {WindowManager} from "@/app/window";
+import {itemClassIcons} from "@/app/eq-chip-icons";
 
 export default {
   name: "ItemPreviewTable",
@@ -147,6 +169,9 @@ export default {
     commify(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
+    classIcons(item) {
+      return itemClassIcons(item && item.classes)
+    },
     getClasses(item) {
       let classes = []
       let classesValue = item.classes
@@ -168,6 +193,16 @@ export default {
 .item-table td {
   vertical-align: middle;
   text-align: center;
+}
+.eq-wear-icons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+.eq-wear-icons [class*="item-"] {
+  display: block !important;
+  margin: 0 !important;
 }
 
 /* For Mobile */

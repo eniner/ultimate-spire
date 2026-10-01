@@ -9,15 +9,14 @@
       </button>
 
       <!-- Brand -->
-      <a class="ml-3 mt-3" href="./index.html">
-        <img src="~@/assets/img/eqemu-logo-1.png" class="navbar-brand-img mx-auto d-none d-sm-block mb-3" alt="..."
-             style="max-height: 7rem">
+      <a class="ml-3 mt-3 navbar-brand-link" href="./index.html">
+        <img src="/ultimate-eq-logo.svg" class="navbar-brand-logo mb-2" alt="Ultimate EQ" style="width: 32px; height: 32px; border-radius: 8px;">
       </a>
 
       <hr class="dropdown-divider">
 
-      <h4 class=" text-center menuetto-header small-mobile">
-        Spire
+      <h4 class="navbar-brand-wordmark small-mobile">
+        Ultimate Spire
       </h4>
 
       <!-- User (xs) -->

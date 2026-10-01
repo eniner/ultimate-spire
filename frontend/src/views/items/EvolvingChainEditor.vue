@@ -1,0 +1,517 @@
+<template>
+  <content-area>
+    <eq-window :title="'Evolving Chain ' + evoId">
+      <div class="d-flex align-items-center mb-3">
+        <router-link :to="listRoute" class="btn btn-sm btn-outline-light mr-3">
+          <i class="fa fa-arrow-left"></i> All Evolving Chains
+        </router-link>
+        <div class="mr-auto">
+          items_evolving_details rows where <b>item_evo_id = {{ evoId }}</b>, joined to each item's evolving columns
+        </div>
+        <b-button size="sm" variant="outline-warning" class="mr-2" @click="load()">
+          <i class="fa fa-refresh"></i> Reload
+        </b-button>
+        <b-button size="sm" variant="warning" :disabled="!rows.length || busy" @click="syncAllItems()">
+          <i class="fa fa-magic"></i> Sync all item columns to this chain
+        </b-button>
+      </div>
+
+      <div v-if="notification" class="text-center eq-header fade-in mb-2" @click="notification = ''">
+        {{ notification }}
+      </div>
+      <b-alert show dismissable variant="danger" v-if="error">
+        <i class="fa fa-warning"></i> {{ error }}
+      </b-alert>
+
+      <app-loader :is-loading="!loaded" class="mt-3 mb-3"/>
+
+      <div v-if="loaded">
+        <div v-if="analysis.problems.length" class="mb-3">
+          <div v-for="p in analysis.problems" :key="p" class="ui-problem">
+            {{ split(p).title }}
+            <small v-if="split(p).detail">{{ split(p).detail }}</small>
+          </div>
+        </div>
+        <div v-else-if="rows.length" class="text-success mb-3">
+          <i class="fa fa-check"></i> This chain is consistent: levels 1-{{ analysis.maxLevel }} are all present and every item matches.
+        </div>
+
+        <div class="evo-table-wrap">
+        <table class="eq-table bordered" style="width: 100%">
+          <thead>
+          <tr>
+            <th colspan="6" class="text-center">items_evolving_details</th>
+            <th colspan="5" class="text-center">items (evolving columns)</th>
+            <th></th>
+          </tr>
+          <tr>
+            <th>Row ID</th>
+            <th style="width: 80px">Level</th>
+            <th style="width: 130px">Item ID</th>
+            <th style="width: 130px">Type</th>
+            <th style="width: 150px">Sub Type</th>
+            <th style="width: 120px">Required Amt</th>
+            <th>Name</th>
+            <th>evoitem</th>
+            <th>evoid</th>
+            <th>evolvinglevel</th>
+            <th>evomax</th>
+            <th style="width: 190px"></th>
+          </tr>
+          </thead>
+          <tbody>
+          <template v-for="r in rows">
+            <tr :key="r.id" :class="analysis.rowIssues[r.id] ? 'evo-row-bad' : ''">
+              <td>{{ r.id }}</td>
+              <td><input type="number" class="form-control form-control-sm" v-model.number="r.item_evolve_level"></td>
+              <td><input type="number" class="form-control form-control-sm evo-id" v-model.number="r.item_id"></td>
+              <td>
+                <select class="form-control form-control-sm evo-type" v-model.number="r.type">
+                  <option v-for="(name, id) in types" :key="id" :value="Number(id)">{{ id }}: {{ name }}</option>
+                </select>
+              </td>
+              <td>
+                <input type="text" class="form-control form-control-sm evo-sub" v-model="r.sub_type">
+                <small class="text-muted">{{ describeSubType(r) }}</small>
+              </td>
+              <td><input type="number" class="form-control form-control-sm" v-model.number="r.required_amount"></td>
+
+              <td class="evo-item-cell">
+                <span v-if="itemIcon(r.item_id)" :class="'item-' + itemIcon(r.item_id) + ' evo-item-icon'"></span>
+                <router-link v-if="items[r.item_id]" :to="classicRoute(r.item_id)">{{ items[r.item_id].name }}</router-link>
+                <span v-else class="text-danger">(item {{ r.item_id }} not found)</span>
+              </td>
+              <td :class="cellClass(r, 'evoitem', 1)">{{ itemField(r, 'evoitem') }}</td>
+              <td :class="cellClass(r, 'evoid', evoId)">{{ itemField(r, 'evoid') }}</td>
+              <td :class="cellClass(r, 'evolvinglevel', r.item_evolve_level)">{{ itemField(r, 'evolvinglevel') }}</td>
+              <td :class="cellClass(r, 'evomax', analysis.maxLevel)">{{ itemField(r, 'evomax') }}</td>
+
+              <td class="text-nowrap">
+                <b-button size="sm" variant="outline-success" title="Save row" :disabled="busy" @click="saveRow(r)">
+                  <i class="fa fa-save"></i>
+                </b-button>
+                <b-button
+                  size="sm" variant="outline-warning" class="ml-1" :disabled="busy || !items[r.item_id]"
+                  title="Set this item's evoitem/evoid/evolvinglevel/evomax to match this row"
+                  @click="syncItem(r).then(load)"
+                >
+                  Sync item
+                </b-button>
+                <b-button size="sm" variant="outline-danger" class="ml-1" title="Delete row" :disabled="busy" @click="deleteRow(r)">
+                  <i class="fa fa-trash"></i>
+                </b-button>
+              </td>
+            </tr>
+            <tr v-if="analysis.rowIssues[r.id]" :key="'issues-' + r.id" class="evo-row-bad">
+              <td colspan="12" class="text-danger pt-0">
+                <span v-for="issue in analysis.rowIssues[r.id]" :key="issue" class="mr-3">
+                  <i class="fa fa-exclamation-circle"></i> {{ issue }}
+                </span>
+              </td>
+            </tr>
+          </template>
+          </tbody>
+        </table>
+        </div>
+
+        <div v-if="gapSuggestions.length" class="mt-4">
+          <h5 class="text-warning">Missing levels</h5>
+          <div class="mb-2 text-muted">
+            Suggested items come from items already flagged with evoid {{ evoId }} at that level, otherwise from the
+            item ID that follows the chain's numbering (level 1 item ID + level - 1). Check the name before adding.
+          </div>
+          <table class="eq-table bordered" style="width: 100%">
+            <thead>
+            <tr>
+              <th style="width: 70px">Level</th>
+              <th style="width: 120px">Item ID</th>
+              <th>Suggested item</th>
+              <th style="width: 120px">Required Amt</th>
+              <th style="width: 200px"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="g in gapSuggestions" :key="g.level">
+              <td><b>{{ g.level }}</b></td>
+              <td><input type="number" class="form-control form-control-sm evo-id" v-model.number="g.item_id"></td>
+              <td class="evo-item-cell">
+                <span v-if="itemIcon(g.item_id)" :class="'item-' + itemIcon(g.item_id) + ' evo-item-icon'"></span>
+                <span v-if="items[g.item_id]">
+                  {{ items[g.item_id].name }}
+                  <small class="text-muted">({{ g.reason }})</small>
+                </span>
+                <span v-else class="text-muted">No item found - enter an item ID</span>
+              </td>
+              <td><input type="number" class="form-control form-control-sm" v-model.number="g.required_amount"></td>
+              <td>
+                <b-button size="sm" variant="warning" :disabled="busy || !g.item_id" @click="addGap(g)">
+                  <i class="fa fa-plus"></i> Add level {{ g.level }}
+                </b-button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4">
+          <h5>Add a level</h5>
+          <div class="d-flex align-items-end">
+            <div class="mr-2">
+              Level
+              <input type="number" class="form-control form-control-sm" style="width: 80px" v-model.number="newRow.item_evolve_level">
+            </div>
+            <div class="mr-2">
+              Item ID
+              <input type="number" class="form-control form-control-sm" style="width: 120px" v-model.number="newRow.item_id">
+            </div>
+            <div class="mr-2">
+              Type
+              <select class="form-control form-control-sm" v-model.number="newRow.type">
+                <option v-for="(name, id) in types" :key="id" :value="Number(id)">{{ id }}: {{ name }}</option>
+              </select>
+            </div>
+            <div class="mr-2">
+              Sub Type
+              <input type="text" class="form-control form-control-sm" style="width: 100px" v-model="newRow.sub_type">
+            </div>
+            <div class="mr-2">
+              Required Amt
+              <input type="number" class="form-control form-control-sm" style="width: 130px" v-model.number="newRow.required_amount">
+            </div>
+            <b-button size="sm" variant="warning" :disabled="busy || !newRow.item_id || !newRow.item_evolve_level" @click="addNewRow()">
+              <i class="fa fa-plus"></i> Add
+            </b-button>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h5>Characters holding items from this chain (character_evolving_items)</h5>
+          <div v-if="!characterRows.length" class="text-muted">No characters have items from this chain.</div>
+          <table v-else class="eq-table bordered" style="width: 100%">
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Character</th>
+              <th>Item</th>
+              <th>Current Amount</th>
+              <th>Progression</th>
+              <th>Equipped</th>
+              <th>Activated</th>
+              <th>Final Item ID</th>
+              <th>Deleted At</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="c in characterRows" :key="c.id">
+              <td>{{ c.id }}</td>
+              <td>{{ characterNames[c.character_id] || c.character_id }}</td>
+              <td class="evo-item-cell">
+                <span v-if="itemIcon(c.item_id)" :class="'item-' + itemIcon(c.item_id) + ' evo-item-icon'"></span>
+                {{ c.item_id }} - {{ items[c.item_id] ? items[c.item_id].name : '?' }}
+              </td>
+              <td>{{ c.current_amount }}</td>
+              <td>{{ Number(c.progression || 0).toFixed(2) }}%</td>
+              <td>{{ c.equipped }}</td>
+              <td>{{ c.activated }}</td>
+              <td :class="finalItemId && c.final_item_id !== finalItemId ? 'text-danger font-weight-bold' : ''">
+                {{ c.final_item_id }}
+                <span v-if="finalItemId && c.final_item_id !== finalItemId">(chain final is {{ finalItemId }})</span>
+              </td>
+              <td>{{ c.deleted_at || '' }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-3 text-muted">
+          Zone servers load items_evolving_details when they boot, so restart zones after changing chains.
+        </div>
+      </div>
+    </eq-window>
+  </content-area>
+</template>
+
+<script>
+import * as util         from "util";
+import EqWindow          from "../../components/eq-ui/EQWindow";
+import ContentArea       from "../../components/layout/ContentArea";
+import {SpireApi}        from "../../app/api/spire-api";
+import {ItemApi}           from "../../app/api";
+import {CharacterDatumApi} from "../../app/api/api/character-datum-api";
+import {Items}           from "../../app/items";
+import {EVOLVING_TYPES, EvolvingItems} from "../../app/evolving-items";
+import {ROUTE}           from "../../routes";
+
+export default {
+  name: "EvolvingChainEditor",
+  components: {ContentArea, EqWindow},
+  data() {
+    return {
+      loaded: false,
+      busy: false,
+      error: "",
+      notification: "",
+      types: EVOLVING_TYPES,
+      rows: [],
+      allDetails: [],
+      items: {},
+      analysis: {problems: [], rowIssues: {}, missing: [], maxLevel: 0},
+      gapSuggestions: [],
+      characterRows: [],
+      characterNames: {},
+      newRow: this.blankRow(),
+    }
+  },
+  computed: {
+    evoId() {
+      return Number(this.$route.params.evoId)
+    },
+    listRoute() {
+      return ROUTE.ITEMS_EVOLVING
+    },
+    finalItemId() {
+      const last = this.rows.find((r) => r.item_evolve_level === this.analysis.maxLevel)
+      return last ? last.item_id : 0
+    },
+  },
+  watch: {
+    "$route.params.evoId"() {
+      this.load()
+    },
+  },
+  mounted() {
+    this.load()
+  },
+  methods: {
+    blankRow() {
+      return {item_evolve_level: null, item_id: null, type: 1, sub_type: "0", required_amount: 0}
+    },
+
+    async load() {
+      this.loaded = false
+      this.error  = ""
+      try {
+        this.allDetails = await EvolvingItems.listDetails()
+        this.rows       = this.allDetails
+          .filter((d) => d.item_evo_id === this.evoId)
+          .sort((a, b) => a.item_evolve_level - b.item_evolve_level || a.id - b.id)
+
+        const items = await EvolvingItems.loadItemsFor(this.allDetails)
+        if (this.rows.length) {
+          const ids     = this.rows.map((r) => r.item_id)
+          const nearby  = await EvolvingItems.loadItemRange(Math.min(...ids), Math.max(...ids) + 30)
+          Object.assign(items, nearby)
+        }
+        this.items    = items
+        this.analysis = this.rows.length
+          ? EvolvingItems.analyzeChain(this.rows, this.items, this.allDetails)
+          : {problems: ["No rows in items_evolving_details for chain " + this.evoId], rowIssues: {}, missing: [], maxLevel: 0}
+
+        this.buildGapSuggestions()
+        this.newRow = {...this.blankRow(), item_evolve_level: this.analysis.maxLevel + 1, ...this.templateFrom(this.rows[this.rows.length - 1])}
+        await this.loadCharacters()
+      } catch (e) {
+        this.error = this.errorText(e)
+      }
+      this.loaded = true
+    },
+
+    templateFrom(row) {
+      return row ? {type: row.type, sub_type: row.sub_type, required_amount: row.required_amount} : {}
+    },
+
+    buildGapSuggestions() {
+      const first = this.rows.find((r) => r.item_evolve_level === 1)
+      this.gapSuggestions = this.analysis.missing.map((level) => {
+        const flagged = Object.values(this.items).find((i) => i.evoid === this.evoId && i.evolvinglevel === level)
+        const byId    = first ? first.item_id + level - 1 : null
+        const below   = [...this.rows].reverse().find((r) => r.item_evolve_level < level)
+
+        let item_id = null
+        let reason  = ""
+        if (flagged) {
+          item_id = flagged.id
+          reason  = "already flagged evoid " + this.evoId + " level " + level
+        } else if (byId && this.items[byId]) {
+          item_id = byId
+          reason  = "next ID in sequence"
+        }
+
+        return {level, item_id, reason, ...this.templateFrom(below)}
+      })
+    },
+
+    async loadCharacters() {
+      const ids          = new Set(this.rows.map((r) => r.item_id))
+      const all          = await EvolvingItems.listCharacterItems()
+      this.characterRows = all.filter((c) => ids.has(c.item_id))
+
+      const api = new CharacterDatumApi(...SpireApi.cfg())
+      for (const cid of new Set(this.characterRows.map((c) => c.character_id))) {
+        if (this.characterNames[cid]) {
+          continue
+        }
+        try {
+          const r = await api.getCharacterDatum({id: cid})
+          this.$set(this.characterNames, cid, r.data.name)
+        } catch (e) {
+          this.$set(this.characterNames, cid, "(deleted character " + cid + ")")
+        }
+      }
+    },
+
+    describeSubType(r) {
+      return EvolvingItems.describeSubType(r.type, r.sub_type)
+    },
+
+    split(p) {
+      return EvolvingItems.splitProblem(p)
+    },
+
+    itemField(r, field) {
+      return this.items[r.item_id] ? this.items[r.item_id][field] : "-"
+    },
+
+    cellClass(r, field, expected) {
+      const item = this.items[r.item_id]
+      return item && item[field] !== expected ? "text-danger font-weight-bold" : ""
+    },
+
+    classicRoute(id) {
+      return util.format(ROUTE.ITEM_EDIT_CLASSIC, id)
+    },
+    itemIcon(id) {
+      return this.items[id] && this.items[id].icon ? this.items[id].icon : 0
+    },
+
+    toDetail(r) {
+      return {
+        id: r.id,
+        item_evo_id: this.evoId,
+        item_evolve_level: Number(r.item_evolve_level),
+        item_id: Number(r.item_id),
+        type: Number(r.type),
+        sub_type: String(r.sub_type),
+        required_amount: Number(r.required_amount),
+      }
+    },
+
+    async run(action, message) {
+      this.busy  = true
+      this.error = ""
+      try {
+        await action()
+        this.notify(message)
+        await this.load()
+      } catch (e) {
+        this.error = this.errorText(e)
+      }
+      this.busy = false
+    },
+
+    saveRow(r) {
+      return this.run(() => EvolvingItems.updateDetail(this.toDetail(r)), "Saved row " + r.id)
+    },
+
+    deleteRow(r) {
+      if (!confirm("Delete level " + r.item_evolve_level + " (item " + r.item_id + ") from chain " + this.evoId + "?")) {
+        return
+      }
+      return this.run(() => EvolvingItems.deleteDetail(r.id), "Deleted row " + r.id)
+    },
+
+    addGap(g) {
+      const detail = this.toDetail({...g, item_evolve_level: g.level})
+      delete detail.id
+      return this.run(() => EvolvingItems.createDetail(detail), "Added level " + g.level)
+    },
+
+    addNewRow() {
+      const detail = this.toDetail(this.newRow)
+      delete detail.id
+      return this.run(() => EvolvingItems.createDetail(detail), "Added level " + detail.item_evolve_level)
+    },
+
+    // items.evoid / evolvinglevel / evomax / evoitem are what the server reads to find the next item
+    async syncItem(r) {
+      const maxLevel = Math.max(...this.rows.map((x) => x.item_evolve_level))
+      const api      = new ItemApi(...SpireApi.cfg())
+      const item     = (await api.getItem({id: r.item_id})).data
+
+      item.evoitem       = 1
+      item.evoid         = this.evoId
+      item.evolvinglevel = r.item_evolve_level
+      item.evomax        = maxLevel
+
+      await api.updateItem({id: item.id, item})
+      Items.setItem(item.id, undefined)
+    },
+
+    syncAllItems() {
+      const rows = this.rows.filter((r) => this.items[r.item_id])
+      return this.run(async () => {
+        for (const r of rows) {
+          await this.syncItem(r)
+        }
+      }, "Synced " + rows.length + " item(s) to chain " + this.evoId)
+    },
+
+    notify(message) {
+      this.notification = message
+      setTimeout(() => this.notification = "", 5000)
+    },
+
+    errorText(e) {
+      return (e.response && e.response.data && e.response.data.error) || String(e)
+    },
+  },
+}
+</script>
+
+<style scoped>
+.evo-row-bad td:first-child {
+  box-shadow: inset 2px 0 0 var(--danger);
+}
+
+.evo-table-wrap {
+  overflow-x: auto;
+}
+
+input[type=number],
+input.evo-sub {
+  min-width: 60px;
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+  -moz-appearance: textfield;
+}
+
+input.evo-id {
+  min-width: 95px !important;
+}
+
+input.evo-sub {
+  min-width: 70px !important;
+}
+
+.evo-type {
+  min-width: 120px !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.evo-item-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.evo-item-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>
