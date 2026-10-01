@@ -510,6 +510,7 @@ export default {
         { label: "Backups", labelIcon: "fa fa-download mr-1", to: ROUTE.ADMIN_BACKUPS },
         { label: "Client Files", labelIcon: "fa fa-download mr-1", to: ROUTE.ADMIN_CLIENT_FILE_DOWNLOADS },
         { label: "Server Files", labelIcon: "fa fa-folder-open mr-1", to: ROUTE.ADMIN_SERVER_FILES },
+        { label: "Website", labelIcon: "fa fa-globe mr-1", to: ROUTE.ADMIN_WEBSITE },
         {
           label: "Configuration",
           labelIcon: "fa fa-cog mr-1",
@@ -527,7 +528,6 @@ export default {
               to: ROUTE.ADMIN_CONFIG_QUEST_HOT_RELOAD,
               icon: "ra ra-alien-fire mr-1"
             },
-            { title: "Server Files", to: ROUTE.ADMIN_SERVER_CONFIG + "?s=Server+Files", icon: "fa fa-folder-open mr-1" },
             { title: "Server Rules", to: ROUTE.ADMIN_CONFIG_SERVER_RULES, icon: "ra ra-interdiction mr-1" },
             { title: "UCS", to: ROUTE.ADMIN_SERVER_CONFIG + '?s=UCS', icon: "ra ra-speech-bubbles mr-1", exact: true },
             {

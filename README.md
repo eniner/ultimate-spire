@@ -65,13 +65,16 @@ Built for the long haul with code generation to make keeping things up to date f
 
 ## Using Spire - Locally
 
-Download the [latest release](https://github.com/EQEmu/spire/releases). for your operating system.
+This Ultimate Spire build is a drop-in replacement for stock Spire. It includes the extra editors, inventory tools, Atlas, server-file tools, and website admin screens.
 
-Place the executable in your EverQuest Emulator Server directory and simply run it.
+1. Download `spire-windows-amd64.exe.zip` from the [latest Ultimate Spire release](https://github.com/eniner/ultimate-spire/releases).
+2. Unzip `spire-windows-amd64.exe`.
+3. Put the exe in the same folder as your emulator's `eqemu_config.json` (the server root).
+4. Double-click it.
 
-That's it. No dependencies, no installations, no extra steps.
+Spire opens a browser on a free port between 8090 and 8099. No extra installs. Maps, icons, and 3D previews download on first launch (internet required once).
 
-Spire on your development server instantly.
+Use this exe, not the official EQEmu/spire release, or auto-update will replace Ultimate Spire with stock Spire.
 
 ![image](https://user-images.githubusercontent.com/3319450/192069875-ba916482-d28f-4b56-8819-7ce971781e87.png)
 

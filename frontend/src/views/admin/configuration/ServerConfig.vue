@@ -434,10 +434,6 @@
 
       </eq-tab>
 
-      <eq-tab class="fade-in" name="Server Files">
-        <server-files embedded/>
-      </eq-tab>
-
       <div class="row">
         <div class="justify-content-center col-12">
           <button type="submit" class="btn btn-dark btn-sm ml-auto" @click="submitServerConfig()">
@@ -477,12 +473,11 @@ import {SpireApi}      from "@/app/api/spire-api";
 import InfoErrorBanner from "@/components/InfoErrorBanner.vue";
 import EqWindowComplex from "@/components/eq-ui/EQWindowComplex.vue";
 import {AppEnv}        from "@/app/env/app-env";
-import ServerFiles     from "@/views/admin/ServerFiles.vue";
 import {Privacy}       from "@/app/privacy";
 
 export default {
   name: "ServerConfig",
-  components: { ServerFiles, EqWindowComplex, InfoErrorBanner, EqTab, EqTabs, EqWindow },
+  components: { EqWindowComplex, InfoErrorBanner, EqTab, EqTabs, EqWindow },
   data() {
     return {
       config: {

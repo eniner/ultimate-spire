@@ -11,6 +11,7 @@ export const ROUTE = {
   ADMIN_CONFIG_SERVER_RULES: "/admin/configuration/server-rules",
   ADMIN_CONFIG_QUEST_HOT_RELOAD: "/admin/configuration/quest-hot-reload",
   ADMIN_SERVER_FILES: "/admin/server-files",
+  ADMIN_WEBSITE: "/admin/website",
   ADMIN_LOG_SETTINGS: "/admin/log-settings",
   ADMIN_CONFIG_PLAYER_EVENT_LOGS: "/admin/player-event-logs/settings",
   ADMIN_FILE_LOGS: "/admin/file-logs",

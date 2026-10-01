@@ -36,7 +36,7 @@ export function itemClassIcons(classes: number): Array<{id: number, icon: number
   if (!classes || classes >= 65535) {
     return []
   }
-  const out = []
+  const out: Array<{id: number, icon: number, name: string}> = []
   for (let i = 0; i < CLASS_BITS.length; i++) {
     const bit = CLASS_BITS[i]
     if ((classes & bit) !== bit) {
@@ -46,7 +46,7 @@ export function itemClassIcons(classes: number): Array<{id: number, icon: number
     out.push({
       id,
       icon: Number(DB_CLASSES_ICONS[id]) || 0,
-      name: DB_PLAYER_CLASSES[String(id)] || ("Class " + id),
+      name: String(DB_PLAYER_CLASSES[String(id)] || ("Class " + id)),
     })
   }
   return out

@@ -27,7 +27,15 @@
         </router-link>
         <router-link class="peq-util-card" to="/editors/players">
           <strong>Characters</strong>
-          <p>PHP "purge old characters" starts as a player search.</p>
+          <p>Player sheets including xtargets. Inventory opens from a row.</p>
+        </router-link>
+        <router-link class="peq-util-card" to="/editors/raid-roles">
+          <strong>Raid roles</strong>
+          <p>Assister and marker assignment on raid_members.</p>
+        </router-link>
+        <router-link class="peq-util-card" to="/admin/website">
+          <strong>Website roles</strong>
+          <p>Assign user or admin on web_users.</p>
         </router-link>
         <router-link class="peq-util-card" to="/editors/accounts">
           <strong>Accounts</strong>

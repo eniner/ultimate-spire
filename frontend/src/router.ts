@@ -360,6 +360,11 @@ const router = new Router({
           meta: {title: "Server Files"},
         },
         {
+          path: ROUTE.ADMIN_WEBSITE,
+          component: () => import('./views/admin/Website.vue'),
+          meta: {title: "Website"},
+        },
+        {
           path: ROUTE.ADMIN_DATABASE_BACKUP,
           component: () => import('./views/admin/tools/DatabaseBackup.vue'),
           meta: {title: "Database Backup"},

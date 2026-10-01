@@ -23,6 +23,7 @@ import { KeyringApi } from "@/app/api/api/keyring-api"
 import { MailApi } from "@/app/api/api/mail-api"
 import { ObjectApi } from "@/app/api/api/object-api"
 import { QuestGlobalApi } from "@/app/api/api/quest-global-api"
+import { RaidMemberApi } from "@/app/api/api/raid-member-api"
 import { SharedTaskApi } from "@/app/api/api/shared-task-api"
 import { Spawn2Api } from "@/app/api/api/spawn2-api"
 import { SpawngroupApi } from "@/app/api/api/spawngroup-api"
@@ -324,9 +325,23 @@ const TABLES: Record<string, PeqTableConfig> = {
     bodyKey: "characterDatum",
     searchFields: ["name", "last_name", "id"],
     orderBy: ["id"],
-    select: ["id", "account_id", "name", "last_name", "level", "class", "race", "zone_id", "gm"],
+    select: ["id", "account_id", "name", "last_name", "level", "class", "race", "zone_id", "gm", "xtargets"],
     rowActions: [{ label: "Inventory", to: (row) => "/editors/inventory?c=" + row.id }],
-    newRow: { name: "NewPlayer", last_name: "", level: 1, race: 1, _class: 1, zone_id: 1, account_id: 1 },
+    newRow: { name: "NewPlayer", last_name: "", level: 1, race: 1, _class: 1, zone_id: 1, account_id: 1, xtargets: 5 },
+  },
+  "raid-roles": {
+    Api: RaidMemberApi,
+    list: "listRaidMembers",
+    create: "createRaidMember",
+    update: "updateRaidMember",
+    delete: "deleteRaidMember",
+    count: "getRaidMembersCount",
+    bodyKey: "raidMember",
+    searchFields: ["name", "raidid", "id"],
+    orderBy: ["raidid", "groupid", "id"],
+    select: ["id", "raidid", "charid", "name", "groupid", "israidleader", "isgroupleader", "is_assister", "is_marker", "note"],
+    allowCreate: false,
+    newRow: {},
   },
   pvp: {
     Api: CharacterDatumApi,

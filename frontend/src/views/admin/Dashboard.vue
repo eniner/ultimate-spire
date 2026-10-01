@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <server-files class="mb-4"/>
-    <div class="row" style="max-height: 85vh; overflow-y: scroll; top: -15px; position: inherit">
+  <div class="row" style="max-height: 85vh; overflow-y: scroll; top: -15px; position: inherit">
     <div class="col-lg-6">
 
       <div class="row">
@@ -22,7 +20,6 @@
     <div class="col-lg-6">
       <players-online-component/>
     </div>
-    </div>
   </div>
 </template>
 
@@ -35,11 +32,9 @@ import DashboardCounter             from "@/views/admin/components/DashboardCoun
 import PlayersOnlineComponent       from "@/views/admin/components/PlayersOnlineComponent.vue";
 import DashboardSystemInfoV2        from "@/views/admin/components/DashboardSystemInfoV2.vue";
 import DashboardNetworkingInfo      from "@/views/admin/components/DashboardNetworkingInfo.vue";
-import ServerFiles                  from "@/views/admin/ServerFiles.vue";
 
 export default {
   components: {
-    ServerFiles,
     DashboardNetworkingInfo,
     DashboardSystemInfoV2,
     PlayersOnlineComponent,
