@@ -225,7 +225,7 @@ function demoBody(config: any) {
       data: {
         os: "demo",
         env: "local",
-        version: "4.24.4-demo",
+        version: "4.24.5-demo",
         features: {github_auth_enabled: false},
         settings: [{setting: "AUTH_ENABLED", value: "false"}],
         is_spire_initialized: true,
@@ -362,10 +362,117 @@ function systemsBody(path: string, method: string, params: any) {
       detected: {questsDir: "quests", suggestions: ["quests"]},
     }
   }
-  if (path.indexOf("/admin/zone-controller/create") !== -1 || path.indexOf("/admin/zone-controller/tier") !== -1 || path.indexOf("/admin/zone-controller/mobs") !== -1) {
+  if (path.indexOf("/admin/zone-controller/create") !== -1 || path.indexOf("/admin/zone-controller/tier") !== -1 || path.indexOf("/admin/zone-controller/mobs") !== -1 || path.indexOf("/admin/zone-controller/factory") !== -1 || path.indexOf("/admin/zone-controller/classify") !== -1 || path.indexOf("/admin/zone-controller/recipes") !== -1) {
+    if (path.indexOf("/admin/zone-controller/recipes") !== -1 && method === "GET") {
+      return {
+        ok: true,
+        recipes: [{
+          id: "classic-t1",
+          name: "Classic T1",
+          group: "classic-t1",
+          step: 1.35,
+          prefix: "T1",
+          basedata: {
+            trash: {level: "71", max_hp: "500000", min_hit: "800", max_hit: "1200"},
+            boss: {level: "75", max_hp: "2000000", min_hit: "1400", max_hit: "2200"},
+            raid: {level: "80", max_hp: "8000000", min_hit: "2200", max_hit: "3600"},
+          },
+          kit: {sourceZone: 17, items: [], tables: []},
+        }],
+      }
+    }
     return {
       ok: true,
       dryRun: true,
+      writes: [],
+      steps: [],
+      warnings: ["Public demo is read-only. This is a preview of the write plan."],
+    }
+  }
+  if (path.indexOf("/admin/zone-controller/validate") !== -1) {
+    return {ok: true, zones: 0, errors: 0, warnings: 0, issues: []}
+  }
+  if (path.indexOf("/admin/zone-controller/live") !== -1) {
+    return {
+      ok: true,
+      worldOk: false,
+      worldNote: "Public demo is read-only.",
+      zones: [{zoneId: 17, short: "blackburrow", long: "Blackburrow", popped: false, players: 0}],
+    }
+  }
+  if (path.indexOf("/admin/zone-controller/apply") !== -1) {
+    return {
+      ok: true,
+      commands: ["!initdata 17"],
+      reloaded: [],
+      rebooted: [],
+      queued: [],
+      live: [],
+      worldOk: false,
+      worldNote: "Public demo is read-only.",
+    }
+  }
+  if (path.indexOf("/admin/content-factory/status") !== -1) {
+    return {ok: true, reserved: 800000, recipeRel: "global/ultimatedata/_spire_recipes/recipes.json", runRel: "global/ultimatedata/_spire_runs"}
+  }
+  if (path.indexOf("/admin/content-factory/ids") !== -1) {
+    return {
+      ok: true,
+      reserved: 800000,
+      rows: [
+        {key: "items", table: "items", column: "id", floor: 800000, maxId: 800120, nextId: 800121, reservedUsed: 12, note: "Demo reserved gear."},
+        {key: "spells_new", table: "spells_new", column: "id", floor: 800000, maxId: 45200, nextId: 800000, reservedUsed: 0, note: "Item click/proc clones."},
+        {key: "loottable", table: "loottable", column: "id", floor: 800000, maxId: 1200, nextId: 800000, reservedUsed: 0, note: "Loot table headers."},
+      ],
+    }
+  }
+  if (path.indexOf("/admin/content-factory/meta") !== -1) {
+    return {slots: [], classes: [], npcSpellIdCap: 65535, reserved: 800000}
+  }
+  if (path.indexOf("/admin/content-factory/search") !== -1) {
+    return {ok: true, kind: params.kind || "items", query: params.q || "", rows: [{id: 1001, name: "Demo Helm"}]}
+  }
+  if (path.indexOf("/admin/content-factory/runs") !== -1) {
+    return {ok: true, runs: []}
+  }
+  if (path.indexOf("/admin/content-factory/census") !== -1) {
+    return {
+      ok: true,
+      zoneId: 17,
+      short: "blackburrow",
+      long: "Blackburrow",
+      counts: {npcs: 1, items: 1, merchants: 1, spellSets: 1, trash: 1, boss: 0, raid: 0, ignore: 0, groundSpawns: 2, forages: 3},
+      npcs: [{id: 5036, name: "a gnoll", level: 5, hp: 120, pops: 8, role: "trash", faction: "Clan", loottableId: 120, npcSpellsId: 2, merchantId: 0, spellSet: "Default", spells: [{id: 13, name: "Complete Heal"}]}],
+      items: [{id: 1001, name: "Cloth Cap", slot: "Head", class: "WAR", click: 0, proc: 0}],
+      merchants: [{id: 1, npcName: "Merchant", npcId: 1, stock: 3, nextSlot: 4}],
+      spellSets: [{id: 2, name: "Default", npcs: 1, spells: [{id: 13, name: "Complete Heal"}]}],
+      neighbors: [{id: 2, short: "qeytoqrg", long: "Qeynos Hills"}],
+      groundSpawns: 2,
+      forages: 3,
+    }
+  }
+  if (path.indexOf("/admin/content-factory/draft") !== -1) {
+    return {ok: true, relPath: "global/ultimatedata/_spire_drafts/content-factory.json", body: {}}
+  }
+  if (path.indexOf("/admin/content-factory/spell-set") !== -1) {
+    return {ok: true, id: 2, name: "Default", entries: [{spellId: 13, name: "Complete Heal", minLevel: 1, maxLevel: 255, type: 1, manacost: -1, recastDelay: 0, priority: 0}]}
+  }
+  if (path.indexOf("/admin/content-factory/catalog") !== -1) {
+    return {ok: true, kind: params.kind || "items", floor: 800000, rows: [{id: 800001, name: "Demo Helm", extra: "click 13", useNote: "unused"}]}
+  }
+  if (path.indexOf("/admin/content-factory/merchant") !== -1) {
+    return {ok: true, merchantId: 1, npcName: "Demo Merchant", npcId: 1, count: 1, nextSlot: 2, replaceNote: "Append uses the next free slot.", stock: [{slot: 1, itemId: 1001, name: "Cloth Cap", price: 5, probability: 100}]}
+  }
+  if (path.indexOf("/admin/content-factory/import-zone") !== -1) {
+    return {ok: true, zoneId: 17, short: "blackburrow", filled: 1, cells: [{slot: "Head", class: "WAR", sourceId: 1001, name: "Cloth Cap"}]}
+  }
+  if (path.indexOf("/admin/content-factory/") !== -1) {
+    return {
+      ok: true,
+      dryRun: true,
+      kind: "demo",
+      clones: [],
+      dbWrites: [],
       writes: [],
       warnings: ["Public demo is read-only. This is a preview of the write plan."],
     }

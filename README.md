@@ -65,7 +65,7 @@ Built for the long haul with code generation to make keeping things up to date f
 
 ## Using Spire - Locally
 
-This Ultimate Spire build is a drop-in replacement for stock Spire. It includes the extra editors, inventory tools, Atlas, server-file tools, and website admin screens.
+This Ultimate Spire build is a drop-in replacement for stock Spire. It includes Content Factory, Tier Factory, Zone Controller, talents / runewords, LDoN, keys / flags, inventory, Atlas, server-file tools, and website admin screens.
 
 1. Download `spire-windows-amd64.exe.zip` from the [latest Ultimate Spire release](https://github.com/eniner/ultimate-spire/releases).
 2. Unzip `spire-windows-amd64.exe`.

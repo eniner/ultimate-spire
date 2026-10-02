@@ -97,12 +97,7 @@ func (e *AccountFlagController) getAccountFlag(c echo.Context) error {
 
 	// key param [p_flag] position [2] type [varchar]
 	if len(c.QueryParam("p_flag")) > 0 {
-		pFlagParam, err := strconv.Atoi(c.QueryParam("p_flag"))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error parsing query param [p_flag] err [%s]", err.Error())})
-		}
-
-		params = append(params, pFlagParam)
+		params = append(params, c.QueryParam("p_flag"))
 		keys = append(keys, "p_flag = ?")
 	}
 
@@ -162,12 +157,7 @@ func (e *AccountFlagController) updateAccountFlag(c echo.Context) error {
 
 	// key param [p_flag] position [2] type [varchar]
 	if len(c.QueryParam("p_flag")) > 0 {
-		pFlagParam, err := strconv.Atoi(c.QueryParam("p_flag"))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error parsing query param [p_flag] err [%s]", err.Error())})
-		}
-
-		params = append(params, pFlagParam)
+		params = append(params, c.QueryParam("p_flag"))
 		keys = append(keys, "p_flag = ?")
 	}
 
@@ -291,12 +281,7 @@ func (e *AccountFlagController) deleteAccountFlag(c echo.Context) error {
 
 	// key param [p_flag] position [2] type [varchar]
 	if len(c.QueryParam("p_flag")) > 0 {
-		pFlagParam, err := strconv.Atoi(c.QueryParam("p_flag"))
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error parsing query param [p_flag] err [%s]", err.Error())})
-		}
-
-		params = append(params, pFlagParam)
+		params = append(params, c.QueryParam("p_flag"))
 		keys = append(keys, "p_flag = ?")
 	}
 

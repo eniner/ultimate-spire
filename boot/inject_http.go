@@ -29,6 +29,7 @@ import (
 	"github.com/EQEmu/spire/internal/serverfiles"
 	"github.com/EQEmu/spire/internal/website"
 	"github.com/EQEmu/spire/internal/ultsystems"
+	"github.com/EQEmu/spire/internal/contentfactory"
 	"github.com/EQEmu/spire/internal/zonecontroller"
 	"github.com/EQEmu/spire/internal/zoneeditor"
 	"github.com/google/wire"
@@ -75,6 +76,7 @@ var httpSet = wire.NewSet(
 	serverfiles.NewController,
 	website.NewController,
 	zonecontroller.NewController,
+	contentfactory.NewController,
 	ultsystems.NewController,
 	provideControllers,
 	NewRouter,
@@ -217,6 +219,7 @@ func provideControllers(
 	serverFilesController *serverfiles.Controller,
 	websiteController *website.Controller,
 	zoneControllerController *zonecontroller.Controller,
+	contentFactoryController *contentfactory.Controller,
 	ultimateSystemsController *ultsystems.Controller,
 ) *appControllerGroups {
 	return &appControllerGroups{
@@ -247,6 +250,7 @@ func provideControllers(
 			serverFilesController,
 			websiteController,
 			zoneControllerController,
+			contentFactoryController,
 			ultimateSystemsController,
 		},
 		v1controllersNoAuth: []routes.Controller{

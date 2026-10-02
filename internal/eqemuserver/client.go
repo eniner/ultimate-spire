@@ -312,3 +312,25 @@ func (c *Client) ReloadQuestsForZone(zone string) error {
 
 	return nil
 }
+
+func (c *Client) ZoneShutdown(zone string) error {
+	zone = strings.TrimSpace(zone)
+	if zone == "" {
+		return fmt.Errorf("empty zone")
+	}
+	_, err := c.GetTelnetClient().Command(
+		telnet.CommandConfig{Command: "zoneshutdown " + zone},
+	)
+	return err
+}
+
+func (c *Client) ZoneBootup(zone string) error {
+	zone = strings.TrimSpace(zone)
+	if zone == "" {
+		return fmt.Errorf("empty zone")
+	}
+	_, err := c.GetTelnetClient().Command(
+		telnet.CommandConfig{Command: "zonebootup " + zone + " 0"},
+	)
+	return err
+}

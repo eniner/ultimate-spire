@@ -1,3 +1,11 @@
+## [4.24.5] 10/2/2026
+
+* **Content Factory** Census a zone, cherry-pick trash vs named, mint item kits and dual loot tables, clone NPC spell sets into the 50000–65535 band, then run one pipeline that writes clones at 800000+ instead of editing vanilla PEQ. Lint, draft, pawn, give, probe, undo.
+* **Tier Factory** Named recipes with trash / boss / raid numbers plus a gear kit. Stamp or ladder tiers across many zones.
+* **LDoN** Theme-first zone and adventure search (Guk, Miragul, Mistmoore, Rujarkian, Takish) plus character points and wins.
+* **Keys / Flags** Owned and known keys plus quest, bucket, zone, and account flags on one character page.
+* **Zone Controller** Live apply / classify / coverage / validate helpers next to the JSON builder.
+
 ## [4.24.2] 1/15/2026
 
 * **Info** Updated a one more URL and some info references. (@Joligario)

@@ -57,7 +57,7 @@
               <td>{{ u.id }}</td>
               <td>{{ u.display_name || u.username }} <span class="privacy-hide text-muted">{{ u.discord_id }}</span></td>
               <td @click.stop>
-                <select class="form-control form-control-sm" :value="u.role" :disabled="busy" @change="assignRole(u, $event)">
+                <select class="form-control form-control-sm" :value="visibleRole(u.role)" :disabled="busy" @change="assignRole(u, $event)">
                   <option v-for="role in roleOptions" :key="role" :value="role">{{ role }}</option>
                 </select>
               </td>
@@ -183,6 +183,9 @@ export default {
     await this.refresh()
   },
   methods: {
+    visibleRole(role) {
+      return role === "admin" ? "admin" : "user"
+    },
     async refresh() {
       try {
         this.status = await WebsiteApi.status()
@@ -211,7 +214,7 @@ export default {
       } catch (e) {
         this.$set(user, "role", previous)
         if (event && event.target) {
-          event.target.value = previous
+          event.target.value = this.visibleRole(previous)
         }
         this.error = (e && e.response && e.response.data && e.response.data.error) || "Role update failed"
       }

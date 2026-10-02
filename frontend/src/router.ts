@@ -187,6 +187,16 @@ const router = new Router({
           meta: {title: "Inventory"},
         },
         {
+          path: ROUTE.CHARACTER_ACCESS,
+          component: () => import('./views/characters/CharacterAccess.vue'),
+          meta: {title: "Keys / Flags"},
+        },
+        {
+          path: ROUTE.CHARACTER_LDON,
+          component: () => import('./views/characters/CharacterLdon.vue'),
+          meta: {title: "LDoN"},
+        },
+        {
           path: ROUTE.EDITOR,
           component: () => import('./views/editors/PeqTableEditor.vue'),
           meta: {title: "Editor"},
@@ -200,6 +210,16 @@ const router = new Router({
           path: ROUTE.ZONE_CONTROLLER_BUILDER,
           component: () => import('./views/zone/ZoneControllerBuilder.vue'),
           meta: {title: "Zone Controller Builder"},
+        },
+        {
+          path: ROUTE.ZONE_CONTROLLER_FACTORY,
+          component: () => import('./views/zone/ZoneTierFactory.vue'),
+          meta: {title: "Tier Factory"},
+        },
+        {
+          path: ROUTE.CONTENT_FACTORY,
+          component: () => import('./views/zone/ContentFactory.vue'),
+          meta: {title: "Content Factory"},
         },
         {
           path: ROUTE.ULTIMATE_SYSTEMS,

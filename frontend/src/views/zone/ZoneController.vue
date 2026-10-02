@@ -21,6 +21,8 @@
             Zone map
           </router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">Build zones / tiers</router-link>
+          <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
+          <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_SYSTEMS">Talents / Unlocks</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ULTIMATE_SYSTEMS">Edit talents / runewords</router-link>
           <a v-if="scriptHref" class="btn btn-sm btn-dark" :href="scriptHref">zone_controller.pl</a>
@@ -44,10 +46,12 @@
           <eq-window title="Build faster" class="mb-3">
             <p class="zc-copy">
               In-game the controller is one zone at a time: hail, add mobs, set basedata, save JSON.
-              Spire can create many zone folders from the template, clone a finished kit, or stamp
-              trash/boss/raid numbers onto a list of zones.
+              The Tier Factory writes a named recipe onto many zones at once: basedata, cloned gear,
+              spawn classify, then apply/reload.
             </p>
             <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">Open builder</router-link>
+            <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
+            <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
           </eq-window>
 
           <eq-window title="Systems" class="mb-3">
@@ -84,6 +88,7 @@
               <tr>
                 <th style="width: 70px">ID</th>
                 <th>Zone</th>
+                <th style="width: 90px">Live</th>
                 <th style="width: 80px" class="text-right">Custom</th>
                 <th style="width: 80px" class="text-right">Ignore</th>
                 <th style="width: 80px" class="text-right">Depop</th>
@@ -103,6 +108,12 @@
                   <b>{{ zoneLabel(z.zoneId) }}</b>
                   <div v-if="zoneShort(z.zoneId)" class="text-muted">{{ zoneShort(z.zoneId) }}</div>
                 </td>
+                <td>
+                  <span v-if="liveById[z.zoneId] && liveById[z.zoneId].popped" class="zc-pill">
+                    popped{{ liveById[z.zoneId].players ? " · " + liveById[z.zoneId].players : "" }}
+                  </span>
+                  <span v-else class="text-muted">down</span>
+                </td>
                 <td class="text-right tabular">{{ z.customCount }}</td>
                 <td class="text-right tabular">{{ z.ignoreCount }}</td>
                 <td class="text-right tabular">{{ z.depopCount }}</td>
@@ -110,7 +121,7 @@
                 <td class="text-right tabular">{{ z.itemCount }}</td>
               </tr>
               <tr v-if="!filteredIndex.length">
-                <td colspan="7" class="text-muted">No ultimatedata folders matched.</td>
+                <td colspan="8" class="text-muted">No ultimatedata folders matched.</td>
               </tr>
               </tbody>
             </table>
@@ -205,10 +216,24 @@
         <div v-else-if="detail">
           <eq-window title="Quick Actions" class="mb-3">
             <p class="zc-copy">
-              Same saylinks the GM zone controller prints on hail.
-              Browse links open the JSON here. Live buttons stay in-game
-              (<code>!zc</code> / hail).
+              Browse links open the JSON here. Live buttons talk to World telnet
+              and queue the same zone-controller commands the GM hail menu uses.
             </p>
+            <div class="zc-live-note mb-2">
+              <template v-if="live && live.worldOk">
+                World telnet is up.
+                <template v-if="thisLive && thisLive.popped">
+                  {{ zoneShort(zoneId) || zoneId }} is popped
+                  <template v-if="thisLive.players">· {{ thisLive.players }} player(s)</template>.
+                </template>
+                <template v-else>
+                  {{ zoneShort(zoneId) || zoneId }} is not popped. Queue waits until boot, or use Boot zone.
+                </template>
+              </template>
+              <template v-else>
+                {{ (live && live.worldNote) || "World telnet is down. Commands can still be queued for the next pop." }}
+              </template>
+            </div>
             <div class="zc-actions">
               <button
                 v-for="a in browseActions"
@@ -223,19 +248,34 @@
             </div>
             <div class="zc-actions zc-actions-live">
               <button
+                v-for="a in worldActions"
+                :key="a.action"
+                type="button"
+                class="btn btn-sm btn-dark"
+                :disabled="liveBusy"
+                @click="runWorld(a.action)"
+              >
+                {{ a.label }}
+              </button>
+              <button
                 v-for="a in liveActions"
                 :key="a.command"
                 type="button"
                 class="btn btn-sm btn-outline-secondary"
-                @click="showLive = a.command"
+                :disabled="liveBusy"
+                @click="runLive(a.command)"
               >
                 {{ a.label }}
               </button>
             </div>
-            <div v-if="showLive" class="zc-live-note">
-              In-game only: hail the zone controller and click
-              <b>{{ liveLabel(showLive) }}</b>
-              or type <code>!zc {{ showLive }}</code>
+            <div v-if="liveResult" class="zc-live-note">
+              <div v-if="liveResult.worldNote">{{ liveResult.worldNote }}</div>
+              <div v-if="(liveResult.reloaded || []).length">Reloaded: {{ liveResult.reloaded.join(", ") }}</div>
+              <div v-if="(liveResult.rebooted || []).length">World: {{ liveResult.rebooted.join(", ") }}</div>
+              <div v-if="(liveResult.queued || []).length">
+                Queued: {{ liveResult.queued.map((q) => (q.short || q.zoneId) + " " + (q.commands || []).join(", ")).join("; ") }}
+              </div>
+              <div v-for="w in (liveResult.warnings || [])" :key="w" class="text-warning">{{ w }}</div>
             </div>
           </eq-window>
 
@@ -421,8 +461,8 @@
 
           <eq-window v-else-if="view === 'commands'" title="Remote commands">
             <p class="zc-copy">
-              From <code>PRINT_REMOTE_COMMANDS</code> plus <code>!zc</code> / <code>#zc</code> direct mode.
-              These run in-game, not from this page.
+              Fallback say commands if World telnet is down. Live buttons on this page
+              queue the same tokens for a popped controller.
             </p>
             <table class="eq-table" style="width: 100%">
               <thead>
@@ -454,6 +494,7 @@ import {
   ZONE_CONTROLLER_BROWSE,
   ZONE_CONTROLLER_LIVE,
   ZONE_CONTROLLER_REMOTE,
+  ZONE_CONTROLLER_WORLD,
   ZoneControllerApi,
 } from "../../app/zone-controller"
 
@@ -480,8 +521,12 @@ export default {
       systemSearch: "",
       itemSearch: "",
       showLive: "",
+      liveBusy: false,
+      live: null,
+      liveResult: null,
       browseActions: ZONE_CONTROLLER_BROWSE,
       liveActions: ZONE_CONTROLLER_LIVE,
+      worldActions: ZONE_CONTROLLER_WORLD,
       remoteCommands: ZONE_CONTROLLER_REMOTE,
     }
   },
@@ -566,6 +611,18 @@ export default {
         return (it.name || "").toLowerCase().includes(s) || String(it.itemId) === s
       })
     },
+    liveById() {
+      const out = {}
+      ;((this.live && this.live.zones) || []).forEach((z) => {
+        if (z && z.zoneId) {
+          out[z.zoneId] = z
+        }
+      })
+      return out
+    },
+    thisLive() {
+      return this.liveById[this.zoneId] || null
+    },
     fileRows() {
       const files = (this.detail && this.detail.files) || {}
       return ["mob", "loot", "item"].map((k) => files[k] || {kind: k, relPath: "", exists: false, size: 0})
@@ -614,6 +671,14 @@ export default {
         this.index = await ZoneControllerApi.list()
         if (this.index && this.index.error && !this.index.ok && !this.zoneId && !this.isSystems) {
           this.error = this.index.error
+        }
+        const liveIds = this.zoneId
+          ? [this.zoneId]
+          : ((this.index && this.index.zones) || []).map((z) => z.zoneId)
+        try {
+          this.live = await ZoneControllerApi.live(liveIds)
+        } catch (e) {
+          this.live = {ok: false, worldOk: false, zones: [], worldNote: "Could not read World zone list."}
         }
 
         if (this.isSystems) {
@@ -695,6 +760,45 @@ export default {
     liveLabel(command) {
       const row = ZONE_CONTROLLER_LIVE.find((a) => a.command === command)
       return row ? row.label : command
+    },
+    async runLive(command) {
+      if (!this.zoneId) {
+        return
+      }
+      this.liveBusy = true
+      this.liveResult = null
+      try {
+        this.liveResult = await ZoneControllerApi.apply({
+          zoneIds: [this.zoneId],
+          queueCommands: [command],
+          rebootEmpty: true,
+        })
+        this.live = await ZoneControllerApi.live([this.zoneId])
+      } catch (e) {
+        this.error = (e.response && e.response.data && e.response.data.error) || String(e)
+      }
+      this.liveBusy = false
+    },
+    async runWorld(action) {
+      if (!this.zoneId) {
+        return
+      }
+      this.liveBusy = true
+      this.liveResult = null
+      try {
+        this.liveResult = await ZoneControllerApi.apply({
+          zoneIds: [this.zoneId],
+          reloadQuests: action === "reload",
+          rebootZones: action === "reboot",
+          rebootEmpty: action === "reboot",
+          bootIfDown: action === "boot" || action === "reboot",
+          queueCommands: action === "reboot" ? ["refreshzonedata"] : [],
+        })
+        this.live = await ZoneControllerApi.live([this.zoneId])
+      } catch (e) {
+        this.error = (e.response && e.response.data && e.response.data.error) || String(e)
+      }
+      this.liveBusy = false
     },
   },
 }

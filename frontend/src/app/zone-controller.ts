@@ -109,6 +109,12 @@ export const ZONE_CONTROLLER_LIVE = [
   {label: "Refresh Zone Data", command: "refreshzonedata"},
 ]
 
+export const ZONE_CONTROLLER_WORLD = [
+  {label: "Reload quests", action: "reload"},
+  {label: "Reboot zone", action: "reboot"},
+  {label: "Boot zone", action: "boot"},
+]
+
 export const ZONE_CONTROLLER_REMOTE = [
   {cmd: "!initdata <zoneid>", info: "Reload JSON into the popped zone controller from any zone."},
   {cmd: "!repop <zoneid>", info: "Repop static named mobs in that zone."},
@@ -164,6 +170,55 @@ export class ZoneControllerApi {
 
   static async addMobs(body: any): Promise<ZoneControllerWritePlan> {
     const r = await SpireApi.v1().post("/admin/zone-controller/mobs", body)
+    return r.data
+  }
+
+  static async recipes() {
+    const r = await SpireApi.v1().get("/admin/zone-controller/recipes")
+    return r.data
+  }
+
+  static async saveRecipe(body: any): Promise<ZoneControllerWritePlan> {
+    const r = await SpireApi.v1().post("/admin/zone-controller/recipes", body)
+    return r.data
+  }
+
+  static async deleteRecipe(id: string): Promise<ZoneControllerWritePlan> {
+    const r = await SpireApi.v1().delete("/admin/zone-controller/recipes/" + encodeURIComponent(id))
+    return r.data
+  }
+
+  static async recipeFromZone(id: number) {
+    const r = await SpireApi.v1().get("/admin/zone-controller/recipes/from/" + id)
+    return r.data
+  }
+
+  static async factory(body: any) {
+    const r = await SpireApi.v1().post("/admin/zone-controller/factory", body)
+    return r.data
+  }
+
+  static async classify(body: any) {
+    const r = await SpireApi.v1().post("/admin/zone-controller/classify", body)
+    return r.data
+  }
+
+  static async validate(zoneIds?: number[]) {
+    const ids = zoneIds || []
+    const q = ids.length ? "?zones=" + ids.join(",") : ""
+    const r = await SpireApi.v1().get("/admin/zone-controller/validate" + q)
+    return r.data
+  }
+
+  static async apply(body: any) {
+    const r = await SpireApi.v1().post("/admin/zone-controller/apply", body)
+    return r.data
+  }
+
+  static async live(zoneIds?: number[]) {
+    const ids = zoneIds || []
+    const q = ids.length ? "?zones=" + ids.join(",") : ""
+    const r = await SpireApi.v1().get("/admin/zone-controller/live" + q)
     return r.data
   }
 }

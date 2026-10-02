@@ -29,6 +29,14 @@
           <strong>Characters</strong>
           <p>Player sheets including xtargets. Inventory opens from a row.</p>
         </router-link>
+        <router-link class="peq-util-card" to="/editors/access">
+          <strong>Keys / Flags</strong>
+          <p>Owned and known keys, quest and bucket flags.</p>
+        </router-link>
+        <router-link class="peq-util-card" to="/editors/ldon">
+          <strong>LDoN</strong>
+          <p>Theme zones, adventures, and character LDoN points.</p>
+        </router-link>
         <router-link class="peq-util-card" to="/editors/raid-roles">
           <strong>Raid roles</strong>
           <p>Assister and marker assignment on raid_members.</p>

@@ -17,6 +17,8 @@
         <div class="ui-toolbar">
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER">Zone Controller</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">ZC builder</router-link>
+          <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
+          <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
           <button v-for="t in tabs" :key="t.id" type="button" class="btn btn-sm" :class="tab === t.id ? 'btn-primary' : 'btn-dark'" @click="tab = t.id">
             {{ t.label }}
           </button>

@@ -13,6 +13,8 @@
 
       <div class="ui-toolbar">
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER">All ZC zones</router-link>
+        <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
+        <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONES">Zones</router-link>
         <button type="button" class="btn btn-sm" :class="tab === 'create' ? 'btn-primary' : 'btn-dark'" @click="tab = 'create'">Create / clone</button>
         <button type="button" class="btn btn-sm" :class="tab === 'tier' ? 'btn-primary' : 'btn-dark'" @click="tab = 'tier'">Apply tier</button>
@@ -95,7 +97,7 @@
         </p>
         <div class="ui-field-grid">
           <div class="ui-field">
-            <label>Source basedata</label>
+            <label>Copy basedata from</label>
             <select v-model.number="tier.fromZone" class="form-control form-control-sm">
               <option :value="0">None — only typed fields</option>
               <option v-for="z in configured" :key="z.zoneId" :value="z.zoneId">
@@ -104,7 +106,7 @@
             </select>
           </div>
           <div class="ui-field">
-            <label>Copy source loot + items</label>
+            <label>Copy loot + items from that zone</label>
             <select v-model="tier.copyLoot" class="form-control form-control-sm">
               <option :value="false">No</option>
               <option :value="true">Yes</option>

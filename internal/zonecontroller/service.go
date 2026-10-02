@@ -10,22 +10,37 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/EQEmu/spire/internal/database"
+	"github.com/EQEmu/spire/internal/eqemuserver"
 	"github.com/EQEmu/spire/internal/pathmgmt"
+	"gorm.io/gorm"
 )
 
 const (
 	maxJSONBytes = 8 << 20
 	dataRel      = "global/ultimatedata"
 	scriptRel    = "global/zone_controller.pl"
+	recipeRel    = "global/ultimatedata/_spire_recipes/recipes.json"
+	commandRel   = "global/ultimatedata/_spire_commands"
+	traitRel     = "global/vendordata/trait_items_non_god_catalog.json"
 )
 
 type Service struct {
 	pathmgmt  *pathmgmt.PathManagement
 	questsDir string
+	db        *database.Resolver
+	world     *eqemuserver.Client
 }
 
-func NewService(pathmgmt *pathmgmt.PathManagement) *Service {
-	return &Service{pathmgmt: pathmgmt}
+func NewService(pathmgmt *pathmgmt.PathManagement, db *database.Resolver, world *eqemuserver.Client) *Service {
+	return &Service{pathmgmt: pathmgmt, db: db, world: world}
+}
+
+func (s *Service) eqemu() *gorm.DB {
+	if s.db == nil {
+		return nil
+	}
+	return s.db.GetEqemuDb()
 }
 
 func (s *Service) questsDirPath() string {
@@ -69,6 +84,7 @@ type ZoneSummary struct {
 	DepopCount     int               `json:"depopCount"`
 	LootTableCount int               `json:"lootTableCount"`
 	ItemCount      int               `json:"itemCount"`
+	Group          string            `json:"group,omitempty"`
 	Files          map[string]FileInfo `json:"files"`
 }
 
@@ -270,6 +286,10 @@ func (s *Service) summarizeZone(id int) (ZoneSummary, error) {
 		sum.Objective = asString(info["objective"])
 		sum.Tip = asString(info["tip"])
 		sum.Respawn = asString(info["respawn"])
+		sum.Group = asString(info["group"])
+		if sum.Group == "" {
+			sum.Group = asString(info["tier_group"])
+		}
 		sum.CustomCount = countCustom(mob["custom"])
 		sum.IgnoreCount = len(namesFromAll(mob["ignore"]))
 		sum.DepopCount = len(namesFromAll(mob["depop"]))
@@ -545,6 +565,33 @@ func asObject(v interface{}) map[string]interface{} {
 		return m
 	}
 	return map[string]interface{}{}
+}
+
+func asArray(v interface{}) []interface{} {
+	if a, ok := v.([]interface{}); ok && a != nil {
+		return a
+	}
+	return []interface{}{}
+}
+
+func asInt(v interface{}) int {
+	switch t := v.(type) {
+	case int:
+		return t
+	case int64:
+		return int(t)
+	case float64:
+		return int(t)
+	case json.Number:
+		i, _ := t.Int64()
+		return int(i)
+	case string:
+		n, _ := strconv.Atoi(strings.TrimSpace(t))
+		return n
+	default:
+		n, _ := strconv.Atoi(strings.TrimSpace(fmt.Sprint(t)))
+		return n
+	}
 }
 
 func asString(v interface{}) string {

@@ -155,6 +155,18 @@
             </li>
 
             <li class="nav-item">
+              <router-link class="nav-link" to="/zones/controller/factory">
+                <i class="ra ra-forging mr-2"></i> Tier Factory
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link" to="/zones/controller/content">
+                <i class="ra ra-anvil mr-2"></i> Content Factory
+              </router-link>
+            </li>
+
+            <li class="nav-item">
               <router-link class="nav-link" to="/systems">
                 <i class="ra ra-lightning-trio mr-2"></i> Talents / Runewords
               </router-link>
@@ -473,7 +485,7 @@ export default {
       charsNav: {
         label: "Characters",
         labelIcon: "ra ra-player mr-1",
-        routePrefixMatches: ["editors/players", "editors/accounts", "editors/guilds", "editors/inventory", "editors/mail"],
+        routePrefixMatches: ["editors/players", "editors/accounts", "editors/guilds", "editors/inventory", "editors/access", "editors/ldon", "editors/mail"],
         navs: [
           {
             title: "Players",
@@ -502,6 +514,20 @@ export default {
             icon: "ra ra-hand mr-1",
             isNew: true,
             routes: ['editors/inventory']
+          },
+          {
+            title: "Keys / Flags",
+            to: "/editors/access",
+            icon: "ra ra-key mr-1",
+            isNew: true,
+            routes: ['editors/access']
+          },
+          {
+            title: "LDoN",
+            to: "/editors/ldon",
+            icon: "ra ra-tower mr-1",
+            isNew: true,
+            routes: ['editors/ldon']
           },
           {
             title: "Inventory rows",
@@ -797,6 +823,8 @@ export default {
         { name: "Zones", route: ROUTE.ZONES },
         { name: "Zone Controller", route: ROUTE.ZONE_CONTROLLER },
         { name: "Zone Controller Builder", route: ROUTE.ZONE_CONTROLLER_BUILDER },
+        { name: "Tier Factory", route: ROUTE.ZONE_CONTROLLER_FACTORY },
+        { name: "Content Factory", route: ROUTE.CONTENT_FACTORY },
         { name: "Talents / Runewords", route: ROUTE.ULTIMATE_SYSTEMS },
         { name: "PEQ Editors", route: ROUTE.EDITORS },
         { name: "Loot", route: ROUTE.LOOT },
@@ -804,6 +832,8 @@ export default {
         { name: "Spawns", route: "/editors/spawns" },
         { name: "Tradeskills", route: "/editors/tradeskills" },
         { name: "Players", route: "/editors/players" },
+        { name: "Keys / Flags", route: "/editors/access" },
+        { name: "LDoN", route: "/editors/ldon" },
         { name: "Accounts", route: "/editors/accounts" },
         { name: "Guilds", route: "/editors/guilds" },
         { name: "Utilities", route: "/editors/util" },

@@ -50,6 +50,7 @@ import (
 	"github.com/EQEmu/spire/internal/serverfiles"
 	"github.com/EQEmu/spire/internal/ultsystems"
 	"github.com/EQEmu/spire/internal/website"
+	"github.com/EQEmu/spire/internal/contentfactory"
 	"github.com/EQEmu/spire/internal/zonecontroller"
 	"github.com/EQEmu/spire/internal/zoneeditor"
 	"github.com/gertd/go-pluralize"
@@ -130,9 +131,10 @@ func InitializeApplication() (App, error) {
 	lanternController := lantern.NewController()
 	serverFilesController := serverfiles.NewController(pathManagement, config, userEvent)
 	websiteController := website.NewController(resolver, userEvent)
-	zonecontrollerController := zonecontroller.NewController(pathManagement)
+	zonecontrollerController := zonecontroller.NewController(pathManagement, resolver, eqemuserverClient)
+	contentfactoryController := contentfactory.NewController(pathManagement, resolver, eqemuserverClient)
 	ultsystemsController := ultsystems.NewController(pathManagement, resolver)
-	bootAppControllerGroups := provideControllers(helloWorldController, controller, meController, analyticsController, connectionsController, questapiController, appController, queryController, clientfilesController, staticMapController, eqemuanalyticsController, authedController, eqemuchangelogController, assetsController, permissionsController, userController, settingsController, eqemuserverController, publicController, eqemuserverconfigController, backupController, websocketController, systemController, modelsController, zoneeditorController, peqrawController, lanternController, serverFilesController, websiteController, zonecontrollerController, ultsystemsController)
+	bootAppControllerGroups := provideControllers(helloWorldController, controller, meController, analyticsController, connectionsController, questapiController, appController, queryController, clientfilesController, staticMapController, eqemuanalyticsController, authedController, eqemuchangelogController, assetsController, permissionsController, userController, settingsController, eqemuserverController, publicController, eqemuserverconfigController, backupController, websocketController, systemController, modelsController, zoneeditorController, peqrawController, lanternController, serverFilesController, websiteController, zonecontrollerController, contentfactoryController, ultsystemsController)
 	aaAbilityController := crudcontrollers.NewAaAbilityController(resolver, userEvent)
 	aaRankController := crudcontrollers.NewAaRankController(resolver, userEvent)
 	aaRankEffectController := crudcontrollers.NewAaRankEffectController(resolver, userEvent)
