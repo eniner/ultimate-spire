@@ -10,7 +10,7 @@ type Account struct {
 	Charname            string          `json:"charname" gorm:"Column:charname"`
 	AutoLoginCharname   string          `json:"auto_login_charname" gorm:"Column:auto_login_charname"`
 	Sharedplat          uint            `json:"sharedplat" gorm:"Column:sharedplat"`
-	Password            string          `json:"password" gorm:"Column:password"`
+	Password            string          `json:"-" gorm:"Column:password"`
 	Status              int             `json:"status" gorm:"Column:status"`
 	LsId                null.String     `json:"ls_id" gorm:"Column:ls_id"`
 	LsaccountId         null.Uint       `json:"lsaccount_id" gorm:"Column:lsaccount_id"`

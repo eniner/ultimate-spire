@@ -7,7 +7,7 @@ export const EVOLVING_TYPES = {
   1: "Experience",
   2: "Kills",
   3: "Race",
-  4: "Zone",
+  4: "Zone kills",
   99: "UNK",
 }
 
@@ -25,16 +25,50 @@ const NO_LIMIT = 1000000
 
 export class EvolvingItems {
 
-  static describeSubType(type, subType) {
+  static parseIdList(subType) {
+    return String(subType == null ? "" : subType)
+      .split(/[,.;|\s]+/)
+      .map((part) => parseInt(part, 10))
+      .filter((id) => Number.isFinite(id) && id > 0)
+  }
+
+  static requiredLabel(type) {
+    switch (Number(type)) {
+      case 1:
+        return "XP"
+      case 2:
+        return "Kills"
+      case 3:
+        return "Kills of that race"
+      case 4:
+        return "Kills in those zones"
+      default:
+        return "Amount"
+    }
+  }
+
+  static describeSubType(type, subType, zoneNames = {}) {
     switch (Number(type)) {
       case 1:
         return EVOLVING_EXP_SUBTYPES[subType] || "UNK"
       case 2:
-        return "N/A"
+        return "Any zone"
       case 3:
         return DB_RACE_NAMES[subType] || "UNK"
-      case 4:
-        return "Zone ID " + subType
+      case 4: {
+        const ids = this.parseIdList(subType)
+        if (!ids.length) {
+          return "No zone IDs"
+        }
+        const labels = ids.map((id) => {
+          const name = zoneNames[id]
+          return name ? id + " " + name : String(id)
+        })
+        if (labels.length <= 6) {
+          return labels.join(", ")
+        }
+        return labels.slice(0, 6).join(", ") + " +" + (labels.length - 6)
+      }
       default:
         return "UNK"
     }
@@ -49,6 +83,21 @@ export class EvolvingItems {
     return r.data || []
   }
 
+  static async listDetailsForItems(itemIds) {
+    const ids = [...new Set((itemIds || []).filter(Boolean))]
+    if (!ids.length) {
+      return []
+    }
+    const q = (new SpireQueryBuilder()).limit(NO_LIMIT)
+    ids.forEach((id) => q.whereOr("item_id", "=", id))
+    const r = await SpireApi.v1().get("/items_evolving_details", {params: q.get()})
+    return r.data || []
+  }
+
+  static async synchronize(itemEvoId) {
+    return SpireApi.v1().post("/items_evolving_details/synchronize", {item_evo_id: itemEvoId})
+  }
+
   static async createDetail(detail) {
     return SpireApi.v1().put("/items_evolving_detail", detail)
   }
@@ -61,33 +110,48 @@ export class EvolvingItems {
     return SpireApi.v1().delete("/items_evolving_detail/" + id)
   }
 
-  static async listCharacterItems() {
+  static async listCharacterItems(itemIds: number[] | null = null) {
     const q = (new SpireQueryBuilder()).limit(NO_LIMIT)
+    if (itemIds && itemIds.length) {
+      itemIds.forEach((id) => q.whereOr("item_id", "=", id))
+    }
     const r = await SpireApi.v1().get("/character_evolving_items", {params: q.get()})
     return r.data || []
   }
 
-  // items flagged as evolving plus any item referenced by a detail row that is not flagged
-  static async loadItemsFor(details) {
-    const api     = new ItemApi(...SpireApi.cfg())
+  static async loadItemsByIds(ids) {
     const items: any = {}
-    const flagged    = await api.listItems(
-      // @ts-ignore
-      (new SpireQueryBuilder()).select(EVOLVING_ITEM_FIELDS).where("evoid", ">", 0).limit(NO_LIMIT).get()
-    )
-    for (const i of (flagged.data || []) as any[]) {
-      items[i.id] = i
+    const unique = [...new Set((ids || []).filter(Boolean))] as number[]
+    if (!unique.length) {
+      return items
     }
-
-    const missing: any[] = [...new Set(details.map((d) => d.item_id))].filter((id: any) => !items[id])
-    for (const id of missing) {
-      const found = await this.loadItemRange(id, id)
-      if (found[id]) {
-        items[id] = found[id]
+    const api = new ItemApi(...SpireApi.cfg())
+    const chunkSize = 200
+    for (let i = 0; i < unique.length; i += chunkSize) {
+      const chunk = unique.slice(i, i + chunkSize)
+      const r = await api.getItemsBulk({body: {ids: chunk}})
+      for (const item of (r.data || []) as any[]) {
+        items[item.id] = item
       }
     }
-
     return items
+  }
+
+  static async listFlaggedForChain(evoId) {
+    const api = new ItemApi(...SpireApi.cfg())
+    const r = await api.listItems(
+      // @ts-ignore
+      (new SpireQueryBuilder()).select(EVOLVING_ITEM_FIELDS).where("evoid", "=", evoId).limit(NO_LIMIT).get()
+    )
+    const items: any = {}
+    for (const i of (r.data || []) as any[]) {
+      items[i.id] = i
+    }
+    return items
+  }
+
+  static async loadItemsFor(details) {
+    return this.loadItemsByIds((details || []).map((d) => d.item_id))
   }
 
   static async loadItemRange(fromId, toId) {

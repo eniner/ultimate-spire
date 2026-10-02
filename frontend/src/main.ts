@@ -1,8 +1,10 @@
 import Vue          from 'vue'
+import axios        from 'axios'
 import router       from './router'
 import App          from './App.vue'
 import store        from './store'
 import BootstrapVue from 'bootstrap-vue'
+import {createDemoAdapter, isDemoMode} from "@/app/demo-mode"
 
 // Bootstrap
 // import 'bootstrap/dist/css/bootstrap.css'
@@ -28,9 +30,7 @@ import "rpg-awesome/css/rpg-awesome.min.css";
 
 import 'highlight.js/styles/tomorrow-night-bright.css';
 
-import hljs from 'highlight.js/lib/highlight';
-import json from 'highlight.js/lib/languages/json.js';
-hljs.registerLanguage('json', json);
+import './app/hljs';
 
 import "toastify-js/src/toastify.css"
 
@@ -57,6 +57,9 @@ import {Privacy} from "@/app/privacy";
 
 Theme.init()
 Privacy.init()
+if (isDemoMode()) {
+  axios.defaults.adapter = createDemoAdapter()
+}
 
 // @ts-ignore
 delete Icon.Default.prototype._getIconUrl;

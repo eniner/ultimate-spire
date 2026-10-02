@@ -1,8 +1,7 @@
 <template>
   <eq-window
     title="Spire Changelog"
-    class="p-0 m-0 mt-3"
-    style="padding-left: 15px !important; padding-right: 15px !important;"
+    class="mt-3"
   >
     <div style="min-height: 100vh">
 

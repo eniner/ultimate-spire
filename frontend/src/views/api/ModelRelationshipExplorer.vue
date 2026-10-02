@@ -1,25 +1,66 @@
 <template>
   <content-area style="padding: 0px !important">
-    <eq-window title="API Model Relationship Explorer">
-      Select model with relationships
-
-      <b-form-select
-        v-model="selected"
-        :options="options"
-        @change="draw"
-      />
-
-      <div class="row mt-3" v-if="selectedModel && Object.keys(selectedModel).length > 0">
-        <div class="col-12">
-          <b>Table</b> {{selectedModel.table}}
-          <b>Model</b> {{selectedModel.model_name}}
-        </div>
+    <div class="row">
+      <div :class="selectedModel.model_name ? 'col-5' : 'col-12'">
+        <eq-window title="API models">
+          <div class="ui-toolbar">
+            <div class="ui-stat-line mr-auto">
+              <b>{{ modelsWithRelations.length }}</b> models with relationships
+            </div>
+            <input
+              class="form-control form-control-sm"
+              v-model="search"
+              placeholder="Filter models"
+            >
+          </div>
+          <div style="overflow: auto; max-height: 75vh">
+            <table class="eq-table">
+              <thead>
+              <tr>
+                <th>Model</th>
+                <th>Table</th>
+                <th class="text-right" style="width: 90px">Rels</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                v-for="model in filteredModels"
+                :key="model.model_name"
+                class="task-row"
+                :class="{ 'is-selected': selected === model.model_name }"
+                @click="selected = model.model_name; draw()"
+              >
+                <td>{{ model.model_name }}</td>
+                <td class="text-muted">{{ model.table }}</td>
+                <td class="tabular text-right">{{ model.relationships.length }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </eq-window>
       </div>
-
-      <pre
-        style="width: 100%; height: 75vh; overflow-y: scroll"
-        v-if="selectedModel && Object.keys(selectedModel).length > 0 && selectedModel.relationships.length > 0" class="mt-3">{{ selectedModel.relationships.join("\n") }}</pre>
-    </eq-window>
+      <div class="col-7" v-if="selectedModel.model_name">
+        <eq-window :title="selectedModel.model_name">
+          <div class="ui-stat-line mb-3">
+            Table <b>{{ selectedModel.table }}</b>
+            <span class="evo-dot">·</span>
+            <b>{{ selectedModel.relationships.length }}</b> relationships
+          </div>
+          <table class="eq-table" v-if="selectedModel.relationships.length">
+            <thead>
+            <tr>
+              <th>Relationship</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(rel, index) in selectedModel.relationships" :key="index">
+              <td class="tabular">{{ rel }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </eq-window>
+      </div>
+    </div>
   </content-area>
 </template>
 
@@ -36,11 +77,24 @@ export default {
     return {
       selected: "",
       options: [],
-
+      search: "",
       models: [],
-
       selectedModel: {}
     }
+  },
+  computed: {
+    modelsWithRelations() {
+      return this.models.filter((m) => m.relationships && m.relationships.length > 0)
+    },
+    filteredModels() {
+      const q = (this.search || "").toLowerCase()
+      return this.modelsWithRelations.filter((m) => {
+        if (!q) {
+          return true
+        }
+        return String(m.model_name).toLowerCase().includes(q) || String(m.table).toLowerCase().includes(q)
+      })
+    },
   },
   methods: {
     draw() {

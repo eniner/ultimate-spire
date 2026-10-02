@@ -307,11 +307,11 @@ export default {
     }
   },
   watch: {
-    zone: {
-      handler(newVal) {
-        this.loadMap()
-      },
-      deep: true
+    zone() {
+      this.loadMap()
+    },
+    version() {
+      this.loadMap()
     },
   },
 
@@ -656,8 +656,11 @@ export default {
       console.timeEnd("[EqZoneMap] parseRaceIconSizes");
     },
 
-    async loadSafeCoordinates() {
+    async loadSafeCoordinates(gen) {
       const zone          = (await Zones.getZoneByShortName(this.zone))
+      if (this.isStale(gen) || !zone) {
+        return
+      }
       let safeCoordinates = []
       safeCoordinates.push({
           point: this.createPoint(-zone.safe_x, -zone.safe_y),
@@ -670,7 +673,7 @@ export default {
       this.safeCoordinateMarker = safeCoordinates
     },
 
-    async loadTranslocatePoints() {
+    async loadTranslocatePoints(gen) {
       const api = (new SpellsNewApi(...SpireApi.cfg()))
 
       try {
@@ -703,6 +706,9 @@ export default {
             sameCoord[s.effect_base_value_2 + s.effect_base_value_1]++
           }
 
+          if (this.isStale(gen)) {
+            return
+          }
           this.translocatePoints = translocatePoints
           this.$forceUpdate()
         }
@@ -782,7 +788,11 @@ export default {
       console.timeEnd("[EqZoneMap] loadMapLines");
     },
 
-    async loadDoors() {
+    isStale(gen) {
+      return gen != null && gen !== this.loadGeneration
+    },
+
+    async loadDoors(gen) {
       console.time("[EqZoneMap] loadDoors");
 
       const api       = (new DoorApi(...SpireApi.cfg()))
@@ -832,6 +842,9 @@ export default {
             }
           }
 
+          if (this.isStale(gen)) {
+            return
+          }
           this.doorMarkers    = doorMarkers
           this.doorZonePoints = doorZonePoints
         }
@@ -935,40 +948,45 @@ export default {
       }
     },
 
-    async loadZonePoints() {
+    async loadZonePoints(gen) {
       console.time("[EqZoneMap] loadZonePoints");
 
       let zonePoints = []
       const zapi     = (new ZonePointApi(...SpireApi.cfg()))
-      zapi.listZonePoints(
-        (new SpireQueryBuilder())
-          .where("zone", "=", this.zone)
-          .get()
-      ).then(async (r) => {
+      try {
+        const r = await zapi.listZonePoints(
+          (new SpireQueryBuilder())
+            .where("zone", "=", this.zone)
+            .get()
+        )
         if (r.status === 200) {
-          console.log(r.data)
           for (let point of r.data) {
+            if (this.isStale(gen)) {
+              return
+            }
             const z = (await Zones.getZoneById(point.target_zone_id))
-
             zonePoints.push({
                 point: this.createPoint(-point.x, -point.y),
-                label: "Zone Point to: " + z.long_name,
+                label: "Zone Point to: " + (z && z.long_name ? z.long_name : point.target_zone_id),
                 zone: z,
               }
             )
           }
-
+          if (this.isStale(gen)) {
+            return
+          }
           this.zonelineMarkers = zonePoints
-
           this.$forceUpdate()
-
-          // console.log(this.zonelineMarkers)
-          console.timeEnd("[EqZoneMap] loadZonePoints");
         }
-      })
+      } catch (err) {
+        console.log("map.vue %s", err)
+      }
+      console.timeEnd("[EqZoneMap] loadZonePoints");
     },
 
     async loadMap() {
+      const gen = this.loadGeneration + 1
+      this.loadGeneration = gen
       // reset
       this.markers              = null
       this.lines                = null
@@ -987,12 +1005,26 @@ export default {
 
       // load
       await this.parseRaceIconSizes()
+      if (this.isStale(gen)) {
+        return
+      }
       await this.loadMapLines()
+      if (this.isStale(gen)) {
+        return
+      }
       await this.loadMapSpawns()
-      this.loadDoors()
-      this.loadZonePoints()
-      this.loadTranslocatePoints()
-      this.loadSafeCoordinates()
+      if (this.isStale(gen)) {
+        return
+      }
+      await Promise.all([
+        this.loadDoors(gen),
+        this.loadZonePoints(gen),
+        this.loadTranslocatePoints(gen),
+        this.loadSafeCoordinates(gen),
+      ])
+      if (this.isStale(gen)) {
+        return
+      }
       this.refreshZExtents()
       this.$emit("map-loaded")
 
@@ -1060,7 +1092,8 @@ export default {
       selectedSpawn2Id: 0,
       selectedMarkerKey: "",
       mapSegments: [],
-      justDragged: false
+      justDragged: false,
+      loadGeneration: 0
     };
   }
 }

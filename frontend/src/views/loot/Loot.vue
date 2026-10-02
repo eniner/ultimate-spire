@@ -3,22 +3,21 @@
     <div class="row">
       <div class="col-7">
         <eq-window title="Loot">
-          <div class="row">
-            <div class="col-6">
+          <div class="ui-toolbar">
+            <div class="ui-field" style="flex: 1 1 260px; margin-bottom: 0">
+              <label>Search</label>
               <input
                 type="text"
-                class="form-control ml-2"
-                placeholder="Search for item names"
+                class="form-control form-control-sm"
+                placeholder="Item names"
                 v-model="search"
                 v-on:keyup="doSearch"
               >
             </div>
-            <div class="col-6">
-              <b-button title="Reset" @click="reset()" size="sm" variant="btn-dark">
-                <i class="fa fa-refresh mr-1"/>
-                Reset
-              </b-button>
-            </div>
+            <b-button title="Reset" @click="reset()" size="sm" variant="outline-secondary">
+              <i class="fa fa-refresh mr-1"/>
+              Reset
+            </b-button>
           </div>
         </eq-window>
 

@@ -1,6 +1,7 @@
 import util from "util";
 import {SpireApi} from "@/app/api/spire-api";
 import UserContext from "@/app/user/UserContext";
+import {isDemoMode} from "@/app/demo-mode";
 
 export class SpireWebsocket {
   private static _ws: any = null
@@ -8,6 +9,9 @@ export class SpireWebsocket {
   private static _listeners: any[] = [];
 
   static connect(): any {
+    if (isDemoMode()) {
+      return null
+    }
     // singleton, we should have connected
     if (this._ws && !this._reconnect) {
       return this._ws;
@@ -61,13 +65,17 @@ export class SpireWebsocket {
   // addEventListener and removeEventListener are used to store listeners
   static addEventListener(type: any, listener: any) {
     this._listeners.push({ type, listener });
-    this._ws.addEventListener(type, listener);
+    if (this._ws) {
+      this._ws.addEventListener(type, listener);
+    }
   }
 
   // removeEventListener is used to remove listeners
   static removeEventListener(type: any, listener: any) {
     this._listeners = this._listeners.filter(l => l.type !== type || l.listener !== listener);
-    this._ws.removeEventListener(type, listener);
+    if (this._ws) {
+      this._ws.removeEventListener(type, listener);
+    }
   }
 
   static close() {

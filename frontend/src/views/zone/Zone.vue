@@ -13,6 +13,7 @@
       <button class="btn btn-sm btn-dark mr-1" :disabled="!dirtyCount || saving" @click="discard">Discard</button>
       <router-link class="btn btn-sm btn-dark mr-1" :to="atlasHref">3D Atlas</router-link>
       <router-link class="btn btn-sm btn-dark mr-1" :to="questFilesHref">Quest files</router-link>
+      <router-link class="btn btn-sm btn-dark mr-1" :to="zoneControllerHref">Zone Controller</router-link>
       <span class="zone-editor-status">
         {{ dirtyCount ? dirtyCount + ' unsaved spawn2 move(s)' : 'No unsaved moves' }}
         <span v-if="saveMessage"> — {{ saveMessage }}</span>
@@ -178,6 +179,13 @@ export default {
     },
     questFilesHref() {
       return "/admin/server-files?path=" + encodeURIComponent(this.zone || "")
+    },
+    zoneControllerHref() {
+      const id = this.zoneData && this.zoneData.zoneidnumber
+      if (id) {
+        return "/zones/controller/" + id
+      }
+      return "/zones/controller"
     },
   },
   beforeDestroy() {

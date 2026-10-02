@@ -1,9 +1,27 @@
 @echo off
-REM Starts Spire (dev build from source) against the UltEQTest server.
+REM Starts Spire (dev build from source) against a local EQEmu server.
 REM Backend must run from the server folder so it finds eqemu_config.json.
 
 set "SPIRE_SRC=%~dp0"
-set "EQ_SERVER=C:\Users\E9ine\Desktop\Emul Stuff\ultimate_eq_original_final_backup\eqemu_installer_files"
+
+if not defined EQ_SERVER (
+  if exist "%SPIRE_SRC%eqemu_config.json" (
+    set "EQ_SERVER=%SPIRE_SRC%"
+  ) else (
+    echo Set EQ_SERVER to your EQEmu server folder ^(the one with eqemu_config.json^).
+    pause
+    exit /b 1
+  )
+)
+
+if not exist "%EQ_SERVER%\eqemu_config.json" (
+  echo EQ_SERVER does not contain eqemu_config.json: %EQ_SERVER%
+  pause
+  exit /b 1
+)
+
+if not defined SPIRE_QUESTS_ROOT set "SPIRE_QUESTS_ROOT=%EQ_SERVER%\quests"
+if not defined SPIRE_WEBSITE_ROOT set "SPIRE_WEBSITE_ROOT=%EQ_SERVER%\web"
 
 taskkill /IM spire-dev.exe /F >nul 2>&1
 taskkill /IM spire-windows-amd64.exe /F >nul 2>&1

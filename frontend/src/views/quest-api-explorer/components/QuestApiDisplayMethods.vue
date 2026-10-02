@@ -3,8 +3,7 @@
     <div
       v-for="(method, index) in apiMethods"
       :key="index"
-      :style="(highlightedMethod === method.method ? 'background-color: rgba(106, 76, 50, 0.5);' : '') + '; overflow-y: scroll;'"
-      :class="'method-scroll-' + method.method"
+      :class="'ui-code-row method-scroll-' + method.method + (highlightedMethod === method.method ? ' is-selected' : '')"
       @click="highlightMethod(method); loadExamples(method.method)"
     >
 

@@ -26,6 +26,11 @@
             aria-label="Search chains"
           >
 
+          <select v-model="typeFilter" class="form-control form-control-sm evo-type-filter" aria-label="Filter by type">
+            <option value="">All types</option>
+            <option v-for="(name, id) in types" :key="id" :value="String(id)">{{ id }}: {{ name }}</option>
+          </select>
+
           <b-form-checkbox v-model="onlyProblems" switch class="evo-switch">Only with problems</b-form-checkbox>
 
           <b-button size="sm" variant="outline-secondary" @click="load()">
@@ -38,6 +43,7 @@
           <tr>
             <th style="width: 90px">Chain</th>
             <th>Levels</th>
+            <th style="width: 140px">Type</th>
             <th style="width: 60px" class="text-right">Max</th>
             <th style="width: 150px">Status</th>
           </tr>
@@ -58,6 +64,7 @@
                   {{ r.item_id }}
                 </span>
               </td>
+              <td class="text-muted">{{ chainType(c) }}</td>
               <td class="text-right tabular">{{ c.analysis.maxLevel }}</td>
               <td>
                 <span v-if="!c.analysis.problems.length" class="badge badge-success">No problems</span>
@@ -75,7 +82,7 @@
             </tr>
             <tr v-if="expanded[c.evoId]" :key="'p-' + c.evoId" class="evo-detail-row">
               <td></td>
-              <td colspan="3">
+              <td colspan="4">
                 <div v-for="p in c.analysis.problems" :key="p" class="ui-problem">
                   {{ split(p).title }}
                   <small v-if="split(p).detail">{{ split(p).detail }}</small>
@@ -88,7 +95,7 @@
 
         <div v-if="!filteredChains.length" class="ui-empty mt-3">
           <div class="ui-empty-title">No chains match</div>
-          Try a different chain ID, item ID or name, or turn off "Only with problems".
+          Try a different chain ID, item ID or name, or clear the type / problems filters.
         </div>
 
         <div v-if="orphanItems.length" class="mt-4">
@@ -128,7 +135,7 @@
 import * as util       from "util";
 import EqWindow        from "../../components/eq-ui/EQWindow";
 import ContentArea     from "../../components/layout/ContentArea";
-import {EvolvingItems} from "../../app/evolving-items";
+import {EVOLVING_TYPES, EvolvingItems} from "../../app/evolving-items";
 import {ROUTE}         from "../../routes";
 
 export default {
@@ -138,10 +145,12 @@ export default {
     return {
       loaded: false,
       error: "",
+      types: EVOLVING_TYPES,
       details: [],
       items: {},
       chainList: [],
       search: this.$route.query.q || "",
+      typeFilter: this.$route.query.type || "",
       onlyProblems: this.$route.query.problems === "1",
       expanded: {},
     }
@@ -152,8 +161,12 @@ export default {
     },
     filteredChains() {
       const s = this.search.trim().toLowerCase()
+      const type = this.typeFilter === "" ? null : Number(this.typeFilter)
       return this.chainList.filter((c) => {
         if (this.onlyProblems && !c.analysis.problems.length) {
+          return false
+        }
+        if (type !== null && !(c.rows || []).some((r) => Number(r.type) === type)) {
           return false
         }
         if (!s) {
@@ -172,6 +185,9 @@ export default {
   },
   watch: {
     search() {
+      this.updateQuery()
+    },
+    typeFilter() {
       this.updateQuery()
     },
     onlyProblems() {
@@ -200,6 +216,10 @@ export default {
       }
       this.loaded = true
     },
+    chainType(c) {
+      const types = [...new Set((c.rows || []).map((r) => Number(r.type)))]
+      return types.map((t) => EVOLVING_TYPES[t] || ("Type " + t)).join(" / ")
+    },
     itemName(id) {
       return this.items[id] ? this.items[id].name : "(missing item)"
     },
@@ -225,6 +245,9 @@ export default {
       const q = {}
       if (this.search) {
         q.q = this.search
+      }
+      if (this.typeFilter) {
+        q.type = this.typeFilter
       }
       if (this.onlyProblems) {
         q.problems = "1"
@@ -252,6 +275,10 @@ export default {
 
 .evo-switch {
   white-space: nowrap;
+}
+
+.evo-type-filter {
+  width: 170px;
 }
 
 .evo-row {

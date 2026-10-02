@@ -38,3 +38,58 @@ export function lanternInstanceToWorld(pos: number[]) {
     z: (pos[2] || 0) * WORLD_SCALE,
   }
 }
+
+export function worldToLantern(wx: number, wy: number, wz: number) {
+  return {
+    pos: [
+      (wx / WORLD_SCALE) / ZONE_MIRROR_X,
+      wy / WORLD_SCALE,
+      wz / WORLD_SCALE,
+    ],
+  }
+}
+
+export function degToRad(deg: number) {
+  return (Number(deg) || 0) * Math.PI / 180
+}
+
+export function radToDeg(rad: number) {
+  return (Number(rad) || 0) * 180 / Math.PI
+}
+
+function invertMapped(id: CoordMapId, mx: number, mz: number): [number, number] {
+  switch (id) {
+    case "x_y":
+      return [mx, mz]
+    case "x_-y":
+      return [mx, -mz]
+    case "-x_y":
+      return [-mx, mz]
+    case "-x_-y":
+      return [-mx, -mz]
+    case "y_x":
+      return [mz, mx]
+    case "y_-x":
+      return [-mz, mx]
+    case "-y_x":
+      return [mz, -mx]
+    case "-y_-x":
+      return [-mz, -mx]
+    default:
+      return [mx, mz]
+  }
+}
+
+export function worldToEq(wx: number, wy: number, wz: number, transform: CoordTransform) {
+  const mapped = invertMapped(transform.id, wx / WORLD_SCALE, wz / WORLD_SCALE)
+  return {x: mapped[0], y: mapped[1], z: wy / WORLD_SCALE}
+}
+
+export function eqHeadingToYaw(heading: number) {
+  return -((Number(heading) || 0) / 512) * Math.PI * 2
+}
+
+export function yawToEqHeading(yaw: number) {
+  const heading = (-yaw / (Math.PI * 2)) * 512
+  return ((heading % 512) + 512) % 512
+}

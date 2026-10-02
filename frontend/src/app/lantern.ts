@@ -24,6 +24,11 @@ export type LanternObjectInstance = {
   colorIndex: number
 }
 
+export type LanternModel = {
+  modelName: string
+  modelRelPath: string
+}
+
 export class LanternApi {
   static async status(): Promise<LanternStatus> {
     const r = await SpireApi.v1().get("/zone-editor/lantern/status")
@@ -37,6 +42,18 @@ export class LanternApi {
 
   static async instances(name: string): Promise<LanternObjectInstance[]> {
     const r = await SpireApi.v1().get(`/zone-editor/lantern/zones/${encodeURIComponent(name)}/instances`)
+    return r.data && r.data.instances ? r.data.instances : []
+  }
+
+  static async models(name: string): Promise<LanternModel[]> {
+    const r = await SpireApi.v1().get(`/zone-editor/lantern/zones/${encodeURIComponent(name)}/models`)
+    return r.data && r.data.models ? r.data.models : []
+  }
+
+  static async saveInstances(name: string, instances: LanternObjectInstance[]): Promise<LanternObjectInstance[]> {
+    const r = await SpireApi.v1().put(`/zone-editor/lantern/zones/${encodeURIComponent(name)}/instances`, {
+      instances,
+    })
     return r.data && r.data.instances ? r.data.instances : []
   }
 

@@ -2,71 +2,61 @@
   <div>
     <eq-window-simple
       title="Quest API Explorer"
-      class="p-2"
     >
-      <div v-if="loaded">
-
-        <!-- Form -->
-        <div class="row">
-          <div class="col-lg-1 col-sm-12 text-center">
-            Language
-            <b-form-select
-              v-model="languageSelection"
-              :options="languageOptions"
-              @change="languageReset(); updateQueryState();"
-            />
-          </div>
-          <div class="col-lg-2 col-sm-12 text-center">
-            Types
-            <b-form-select
-              v-model="methodTypeSelection"
-              @change="methodTypeSelectReset(); updateQueryState(); "
-              :options="methodTypeOptions"
-            />
-          </div>
-          <div class="col-lg-2 col-sm-12 text-center">
-            Events
-            <b-form-select
-              v-model="eventSelection"
-              @change="eventSelectReset(); updateQueryState();"
-              :options="eventOptions"
-            />
-          </div>
-          <div class="col-lg-2 col-sm-12 text-center">
-            Constants
-            <b-form-select
-              v-model="constantSelection"
-              @change="constantSelectReset(); updateQueryState();"
-              :options="constantOptions"
-            />
-          </div>
-          <div :class="'col-lg-' + (appEnvLocal ? '3' : '4') + ' col-sm-12 text-center'">
-            Search
-            <b-input
-              id="quest-explorer-search"
-              v-model="search"
-              v-on:keyup="optionLoaded = false; onSearch(); onSearchMethodExampleLoad()"
-              placeholder="Search for methods, events (soon constants)..."
-              autofocus
-            />
-          </div>
-          <div class="col-lg-1 col-sm-12 text-center" v-if="appEnvLocal">
-            <b-button
-              variant="outline-warning"
-              @click="refreshDefinitions"
-              size="sm"
-              style="margin-top: 20px"
-            >
-              <i class="fa fa-refresh"></i> Refresh
-            </b-button>
-          </div>
-          <div class="col-lg-1 col-sm-12 text-center mt-3">
-            <span class="font-weight-bold">Last Updated</span>
-            <div>{{ fromNow(api.last_refreshed) }}</div>
-          </div>
-
+      <div v-if="loaded" class="ui-toolbar">
+        <div class="ui-field" style="flex: 0 1 140px; margin-bottom: 0">
+          <label>Language</label>
+          <b-form-select
+            v-model="languageSelection"
+            :options="languageOptions"
+            @change="languageReset(); updateQueryState();"
+          />
         </div>
-
+        <div class="ui-field" style="flex: 1 1 160px; margin-bottom: 0">
+          <label>Types</label>
+          <b-form-select
+            v-model="methodTypeSelection"
+            @change="methodTypeSelectReset(); updateQueryState(); "
+            :options="methodTypeOptions"
+          />
+        </div>
+        <div class="ui-field" style="flex: 1 1 160px; margin-bottom: 0">
+          <label>Events</label>
+          <b-form-select
+            v-model="eventSelection"
+            @change="eventSelectReset(); updateQueryState();"
+            :options="eventOptions"
+          />
+        </div>
+        <div class="ui-field" style="flex: 1 1 160px; margin-bottom: 0">
+          <label>Constants</label>
+          <b-form-select
+            v-model="constantSelection"
+            @change="constantSelectReset(); updateQueryState();"
+            :options="constantOptions"
+          />
+        </div>
+        <div class="ui-field" style="flex: 2 1 240px; margin-bottom: 0">
+          <label for="quest-explorer-search">Search</label>
+          <b-input
+            id="quest-explorer-search"
+            v-model="search"
+            v-on:keyup="optionLoaded = false; onSearch(); onSearchMethodExampleLoad()"
+            placeholder="Methods, events, constants"
+            autofocus
+          />
+        </div>
+        <b-button
+          v-if="appEnvLocal"
+          variant="outline-secondary"
+          @click="refreshDefinitions"
+          size="sm"
+        >
+          <i class="fa fa-refresh"></i> Refresh
+        </b-button>
+        <div class="ui-stat-line" v-if="api.last_refreshed">
+          Updated {{ fromNow(api.last_refreshed) }}
+        </div>
       </div>
 
       <app-loader :is-loading="!loaded" padding="4"/>
@@ -76,8 +66,8 @@
     </eq-window-simple>
 
     <eq-window-simple
+      title="Results"
       v-if="eventSelection || apiMethods.length > 0 || (languageSelection && constantSelection && api) || (search.length > 0 && optionLoaded)"
-      class="p-0"
     >
       <!-- Display Quest API Methods -->
       <div class="row mt-2" v-if="apiMethods.length > 0">

@@ -269,6 +269,9 @@ export default {
     },
 
     checkForSpireUpdate(force = false) {
+      if (process.env.VUE_APP_DEMO === "true") {
+        return
+      }
       if (!AppEnv.isAppLocal()) {
         console.log("skipping update check, not local app")
         return
@@ -288,8 +291,7 @@ export default {
 
       let latest = "0.0.0";
 
-      // fetch from github releases EQEmu/spire
-      const url = 'https://api.github.com/repos/EQEmu/spire/releases/latest'
+      const url = 'https://api.github.com/repos/eniner/ultimate-spire/releases/latest'
       fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -345,7 +347,7 @@ export default {
       cssFiles.forEach(file => {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = `/eq-asset-preview-master/assets/sprites/${file.href}`;
+        link.href = App.ASSET_CDN_BASE_URL + "assets/sprites/" + file.href;
 
         if (file.id) {
           link.id = file.id; // Add the id attribute if it exists

@@ -671,13 +671,21 @@ export default {
       }
       if (this.$route.query.checkboxFilters) {
         this.resetCheckboxFilters()
-        let checkboxFilters = JSON.parse(this.$route.query.checkboxFilters);
-        for (let key in checkboxFilters) {
-          this.checkboxFilters[key] = checkboxFilters[key]
+        try {
+          let checkboxFilters = JSON.parse(this.$route.query.checkboxFilters);
+          for (let key in checkboxFilters) {
+            this.checkboxFilters[key] = checkboxFilters[key]
+          }
+        } catch (e) {
+          this.resetCheckboxFilters()
         }
       }
       if (this.$route.query.filters) {
-        this.filters = JSON.parse(this.$route.query.filters);
+        try {
+          this.filters = JSON.parse(this.$route.query.filters);
+        } catch (e) {
+          this.filters = [];
+        }
       } else {
         this.filters = [];
       }

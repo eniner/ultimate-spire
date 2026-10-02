@@ -3,6 +3,7 @@ package serverfiles
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -47,6 +48,9 @@ func NewService(pathmgmt *pathmgmt.PathManagement, config *eqemuserverconfig.Con
 				}
 				if len(via) >= 5 {
 					return errors.New("too many redirects")
+				}
+				if err := rejectBlockedURL(req.URL); err != nil {
+					return err
 				}
 				return nil
 			},
@@ -252,7 +256,33 @@ func parseHTTPRoot(raw string) (*url.URL, error) {
 	if u.Scheme != "http" && u.Scheme != "https" {
 		return nil, errors.New("only http:// and https:// URLs are allowed")
 	}
+	if err := rejectBlockedURL(u); err != nil {
+		return nil, err
+	}
 	return u, nil
+}
+
+func rejectBlockedURL(u *url.URL) error {
+	if u == nil || u.Host == "" {
+		return errors.New("invalid URL")
+	}
+	if u.User != nil {
+		return errors.New("URLs must not contain usernames or passwords")
+	}
+	host := strings.ToLower(u.Hostname())
+	if host == "localhost" || host == "127.0.0.1" || host == "::1" || strings.HasSuffix(host, ".localhost") || strings.HasSuffix(host, ".local") {
+		return errors.New("internal hosts are not allowed")
+	}
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return fmt.Errorf("could not resolve host: %w", err)
+	}
+	for _, ip := range ips {
+		if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsUnspecified() {
+			return errors.New("internal addresses are not allowed")
+		}
+	}
+	return nil
 }
 
 func (s *Service) resolveAbs(root, rel string) (string, error) {
@@ -271,6 +301,28 @@ func (s *Service) resolveAbs(root, rel string) (string, error) {
 	}
 	relBack, err := filepath.Rel(absRoot, target)
 	if err != nil || relBack == ".." || strings.HasPrefix(relBack, ".."+string(os.PathSeparator)) {
+		return "", errors.New("path traversal detected")
+	}
+	evalRoot, err := filepath.EvalSymlinks(absRoot)
+	if err != nil {
+		evalRoot = absRoot
+	}
+	evalTarget, err := filepath.EvalSymlinks(target)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return "", errors.New("invalid path")
+		}
+		parent, perr := filepath.EvalSymlinks(filepath.Dir(target))
+		if perr != nil {
+			if !os.IsNotExist(perr) {
+				return "", errors.New("invalid path")
+			}
+			parent = filepath.Dir(target)
+		}
+		evalTarget = filepath.Join(parent, filepath.Base(target))
+	}
+	relEval, err := filepath.Rel(evalRoot, evalTarget)
+	if err != nil || relEval == ".." || strings.HasPrefix(relEval, ".."+string(os.PathSeparator)) {
 		return "", errors.New("path traversal detected")
 	}
 	return target, nil

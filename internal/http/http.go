@@ -73,6 +73,7 @@ func (c *Server) Serve(port uint) error {
 	env.SetAppModeWebserver()
 
 	BootstrapMiddleware(e, c.router)
+	e.Use(spiremiddleware.CaptureJSONKeys())
 	if err := BootstrapControllers(e, c.router.ControllerGroups()...); err != nil {
 		c.logger.Fatal().Err(err).Msg("Failed to bootstrap controllers")
 	}

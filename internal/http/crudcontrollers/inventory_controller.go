@@ -7,6 +7,7 @@ import (
 	"github.com/EQEmu/spire/internal/http/routes"
 	"github.com/EQEmu/spire/internal/models"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/null/v8"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"net/http"
@@ -184,8 +185,21 @@ func (e *InventoryController) updateInventory(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Cannot find entity [%s]", err.Error())})
 	}
 
+	itemID := request.ItemId
+	if !itemID.Valid {
+		itemID = result.ItemId
+	}
+	slotID := request.SlotId
+	if slotID == 0 {
+		slotID = result.SlotId
+	}
+	if err := e.enforceInventoryFit(c, slotID, itemID); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+
 	// save top-level using only changes
 	diff := database.ResultDifference(result, request)
+	diff = database.LimitDiffToJSON(c, request, diff)
 	err = query.Session(&gorm.Session{FullSaveAssociations: false}).Updates(diff).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error updating entity [%v]", err.Error())})
@@ -230,6 +244,10 @@ func (e *InventoryController) createInventory(c echo.Context) error {
 			http.StatusInternalServerError,
 			echo.Map{"error": fmt.Sprintf("Error binding to entity [%v]", err.Error())},
 		)
+	}
+
+	if err := e.enforceInventoryFit(c, inventory.SlotId, inventory.ItemId); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
 	}
 
 	db := e.db.Get(models.Inventory{}, c).Model(&models.Inventory{})
@@ -395,4 +413,26 @@ func (e *InventoryController) getInventoriesCount(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"count": count})
+}
+
+func (e *InventoryController) enforceInventoryFit(c echo.Context, slotID uint32, itemID null.Uint) error {
+	if c.QueryParam("force") == "1" || !itemID.Valid || itemID.Uint == 0 {
+		return nil
+	}
+	if slotID > 22 {
+		return nil
+	}
+	var item models.Item
+	if err := e.db.Get(models.Item{}, c).Select("id", "slots").Where("id = ?", itemID.Uint).First(&item).Error; err != nil {
+		return fmt.Errorf("item %d was not found", itemID.Uint)
+	}
+	const allWorn = 8388607
+	if item.Slots == allWorn || item.Slots == 65535 {
+		return nil
+	}
+	mask := 1 << int(slotID)
+	if item.Slots&mask == 0 {
+		return fmt.Errorf("item %d does not fit worn slot %d; pass force=1 to override", itemID.Uint, slotID)
+	}
+	return nil
 }

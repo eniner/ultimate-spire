@@ -1,6 +1,8 @@
 package serverfiles
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -67,6 +69,11 @@ func (s *Service) listLocal(root, rel string) ([]Entry, error) {
 	return entries, nil
 }
 
+func fileHash(body string) string {
+	sum := sha256.Sum256([]byte(body))
+	return hex.EncodeToString(sum[:])
+}
+
 func (s *Service) readLocal(root, rel string) (string, error) {
 	abs, err := s.resolveAbs(root, rel)
 	if err != nil {
@@ -92,7 +99,7 @@ func (s *Service) readLocal(root, rel string) (string, error) {
 	return string(body), nil
 }
 
-func (s *Service) writeLocal(root, rel, content string, create bool) error {
+func (s *Service) writeLocal(root, rel, content, expectedHash string, create bool) error {
 	if len(content) > maxFileBytes {
 		return errors.New("file is too large to save")
 	}
@@ -118,17 +125,41 @@ func (s *Service) writeLocal(root, rel, content string, create bool) error {
 		return fmt.Errorf("file not found: %w", err)
 	} else if info.IsDir() {
 		return errors.New("path is a folder")
+	} else if expectedHash != "" {
+		current, readErr := os.ReadFile(abs)
+		if readErr != nil {
+			return readErr
+		}
+		if fileHash(string(current)) != expectedHash {
+			return errStaleFile
+		}
 	}
-	tmp := abs + ".spire-tmp"
-	if err := os.WriteFile(tmp, []byte(content), 0644); err != nil {
+	dir := filepath.Dir(abs)
+	tmp, err := os.CreateTemp(dir, ".spire-tmp-*")
+	if err != nil {
 		return err
 	}
-	if err := os.Rename(tmp, abs); err != nil {
-		_ = os.Remove(tmp)
+	tmpName := tmp.Name()
+	if _, err := tmp.Write([]byte(content)); err != nil {
+		tmp.Close()
+		_ = os.Remove(tmpName)
 		return err
+	}
+	if err := tmp.Close(); err != nil {
+		_ = os.Remove(tmpName)
+		return err
+	}
+	if err := os.Rename(tmpName, abs); err != nil {
+		_ = os.Remove(abs)
+		if err = os.Rename(tmpName, abs); err != nil {
+			_ = os.Remove(tmpName)
+			return err
+		}
 	}
 	return nil
 }
+
+var errStaleFile = errors.New("file changed on disk; reload before saving")
 
 func (s *Service) searchLocal(root, rel, q string) ([]Entry, error) {
 	q = strings.ToLower(strings.TrimSpace(q))

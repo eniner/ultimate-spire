@@ -241,6 +241,7 @@
           <div v-else-if="activeTab === 'shared'" class="inv-split">
             <div class="inv-panel">
               <div class="inv-panel-head">Shared bank</div>
+              <div class="inv-warn" v-if="sharedError">{{ sharedError }}</div>
               <div class="inv-grid inv-grid-4">
                 <inventory-slot-cell
                   v-for="slotId in sharedSlots"
@@ -333,6 +334,9 @@
                 <item-popover :item="selectedItem" size="sm"/>
                 <router-link class="inv-item-link" :to="'/item/' + selectedItem.id">#{{ selectedItem.id }}</router-link>
                 <div class="inv-warn" v-if="slotMismatch">Does not fit {{ shortName(selectedSlot) }}.</div>
+                <label class="inv-field" v-if="selectedSlot <= 22">
+                  <input type="checkbox" v-model="forceEquip"> Force equip anyway
+                </label>
               </div>
               <div v-else class="inv-empty-slot">
                 <div>Empty {{ slotName(selectedSlot) }}.</div>
@@ -468,6 +472,8 @@ export default {
       parcelDraft: {},
       itemSearch: "",
       itemHits: [],
+      forceEquip: false,
+      sharedError: "",
       wornPaperdoll: WORN_PAPERDOLL,
       generalSlots: GENERAL_SLOTS,
       zoneNames: {},
@@ -804,8 +810,10 @@ export default {
     async loadShared() {
       if (!this.character || !this.character.account_id) {
         this.sharedRows = []
+        this.sharedError = ""
         return
       }
+      this.sharedError = ""
       try {
         const client = axios.create(SpireApi.getAxiosConfig())
         const r = await client.get("/sharedbanks", {
@@ -827,6 +835,7 @@ export default {
         this.sharedRows = rows.map((row) => Object.assign({}, row, {item: items[row.item_id] || null}))
       } catch (err) {
         this.sharedRows = []
+        this.sharedError = this.errorText(err)
       }
     },
     async loadInventory() {
@@ -970,7 +979,14 @@ export default {
       return axios.create(SpireApi.getAxiosConfig())
     },
     slotOpts(slotId) {
-      return {query: {slot_id: slotId}}
+      const query = {slot_id: slotId}
+      if (this.forceEquip) {
+        query.force = "1"
+      }
+      return {query}
+    },
+    createOpts() {
+      return this.forceEquip ? {query: {force: "1"}} : undefined
     },
     async searchItems() {
       this.status = ""
@@ -1008,6 +1024,10 @@ export default {
     async assignItem(item) {
       const slotId = this.selectedSlot
       const existing = this.rowAt(slotId)
+      if (!this.forceEquip && !itemFitsWorn(item, slotId)) {
+        this.status = "Does not fit that worn slot. Enable Force to override."
+        return
+      }
       this.saving = true
       this.status = ""
       try {
@@ -1025,7 +1045,7 @@ export default {
           await this.invApi().updateInventory({id: this.character.id, inventory: body}, this.slotOpts(slotId))
           await this.loadInventory()
         } else {
-          await this.invApi().createInventory({inventory: this.blankRow(slotId, item)})
+          await this.invApi().createInventory({inventory: this.blankRow(slotId, item)}, this.createOpts())
           await this.loadInventory()
         }
         this.selectInvSlot(slotId)

@@ -4,45 +4,43 @@
       <div :class="(isAnySelectorActive() ? 'col-7' : 'col-12')">
         <eq-window
           v-if="zoneData"
-          :title="`${zoneData.long_name} Short Name (${zoneData.short_name}) Version (${zoneData.version}) NPC(s) (${npcTypes.length})`"
+          :title="zoneData.long_name + ' — ' + zoneData.short_name + ' v' + zoneData.version"
         >
-          <div class="row">
-            <div :class="(isAnySelectorActive() ? 'col-2' : 'col-1') + 'text-right'">
-              <button
-                class='btn btn-dark btn-sm mt-1'
-                @click="reset"
-              >
-                <i class="fa fa-refresh"></i> Reset
-              </button>
-              <button
-                class='btn btn-dark btn-sm mt-1 ml-3'
-                @click="bulkEdit()"
-              >
-                <i class="fa fa-edit"></i> Bulk Edit
-              </button>
+          <div class="ui-toolbar">
+            <div class="ui-stat-line mr-auto">
+              <b>{{ npcTypes.length }}</b> NPCs
             </div>
-
-            <div class="col-3">
+            <div class="ui-field" style="flex: 1 1 220px; margin-bottom: 0">
+              <label for="npc-search">Search</label>
               <b-input
-                placeholder="Search by NPC name"
+                id="npc-search"
+                placeholder="NPC name"
                 v-on:keyup.enter="updateQueryState"
                 v-model="npcNameSearch"
               ></b-input>
             </div>
-
-            <div class="col-6 p-0">
-              <db-column-filter
-                v-if="npcTypeFields && filters"
-                :set-filters="filters"
-                @input="handleDbColumnFilters($event);"
-                :columns="npcTypeFields"
-              />
+            <button
+              class="btn btn-dark btn-sm"
+              @click="reset"
+            >
+              <i class="fa fa-refresh"></i> Reset
+            </button>
+            <button
+              class="btn btn-dark btn-sm"
+              @click="bulkEdit()"
+            >
+              <i class="fa fa-edit"></i> Bulk Edit
+            </button>
+          </div>
+          <div class="ui-section" v-if="npcTypeFields && filters">
+            <div class="ui-section-head">
+              <h6 class="ui-section-title">Column filters</h6>
             </div>
-
-
-            <!--        <div class="col-2">-->
-            <!--          {{ npcTypes.length }} NPC(s)-->
-            <!--        </div>-->
+            <db-column-filter
+              :set-filters="filters"
+              @input="handleDbColumnFilters($event);"
+              :columns="npcTypeFields"
+            />
           </div>
         </eq-window>
         <eq-window

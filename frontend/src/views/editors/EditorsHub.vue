@@ -82,8 +82,8 @@ export default {
   display: block;
   padding: 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(18, 22, 27, 0.45);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  background: var(--surface-2, rgba(18, 22, 27, 0.45));
   color: inherit;
   text-decoration: none;
 }

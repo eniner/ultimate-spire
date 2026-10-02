@@ -67,8 +67,8 @@ func validateSaveRequest(req *SavePlacementsRequest) error {
 			return fmt.Errorf("changes[%d]: id is required", i)
 		}
 		table := strings.ToLower(strings.TrimSpace(change.Table))
-		if table != "spawn2" {
-			return fmt.Errorf("changes[%d]: unsupported table %q (phase 1 is spawn2 only)", i, change.Table)
+		if table != "spawn2" && table != "object" {
+			return fmt.Errorf("changes[%d]: unsupported table %q (spawn2 or object)", i, change.Table)
 		}
 		if change.X == nil && change.Y == nil && change.Z == nil && change.Heading == nil {
 			return fmt.Errorf("changes[%d]: no placement fields to update", i)
@@ -91,7 +91,39 @@ func (e *Controller) savePlacements(c echo.Context) error {
 	updatedIDs := make([]int, 0, len(req.Changes))
 
 	err := db.Transaction(func(tx *gorm.DB) error {
+		var zone models.Zone
+		if err := tx.Where("short_name = ?", req.Zone).First(&zone).Error; err != nil {
+			return fmt.Errorf("zone %s not found", req.Zone)
+		}
 		for _, change := range req.Changes {
+			table := strings.ToLower(strings.TrimSpace(change.Table))
+			if table == "object" {
+				var row models.Object
+				err := tx.Where("id = ? AND zoneid = ? AND version = ?", change.ID, zone.Zoneidnumber, req.Version).
+					First(&row).Error
+				if err != nil {
+					return fmt.Errorf("object id %d not found in zone %s version %d", change.ID, req.Zone, req.Version)
+				}
+				updates := map[string]interface{}{}
+				if change.X != nil {
+					updates["xpos"] = *change.X
+				}
+				if change.Y != nil {
+					updates["ypos"] = *change.Y
+				}
+				if change.Z != nil {
+					updates["zpos"] = *change.Z
+				}
+				if change.Heading != nil {
+					updates["heading"] = *change.Heading
+				}
+				if err := tx.Model(&row).Updates(updates).Error; err != nil {
+					return fmt.Errorf("failed updating object id %d: %v", change.ID, err)
+				}
+				updatedIDs = append(updatedIDs, change.ID)
+				continue
+			}
+
 			var row models.Spawn2
 			err := tx.Where("id = ? AND zone = ? AND version = ?", change.ID, req.Zone, req.Version).
 				First(&row).Error
@@ -130,7 +162,7 @@ func (e *Controller) savePlacements(c echo.Context) error {
 
 	if e.auditLog != nil && len(updatedIDs) > 0 {
 		event := fmt.Sprintf(
-			"Zone editor spawn2 placements zone=%s version=%d count=%d ids=%v",
+			"Zone editor placements zone=%s version=%d count=%d ids=%v",
 			req.Zone,
 			req.Version,
 			len(updatedIDs),

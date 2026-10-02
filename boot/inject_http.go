@@ -28,6 +28,8 @@ import (
 	"github.com/EQEmu/spire/internal/peqraw"
 	"github.com/EQEmu/spire/internal/serverfiles"
 	"github.com/EQEmu/spire/internal/website"
+	"github.com/EQEmu/spire/internal/ultsystems"
+	"github.com/EQEmu/spire/internal/zonecontroller"
 	"github.com/EQEmu/spire/internal/zoneeditor"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
@@ -72,6 +74,8 @@ var httpSet = wire.NewSet(
 	lantern.NewController,
 	serverfiles.NewController,
 	website.NewController,
+	zonecontroller.NewController,
+	ultsystems.NewController,
 	provideControllers,
 	NewRouter,
 )
@@ -212,6 +216,8 @@ func provideControllers(
 	lanternController *lantern.Controller,
 	serverFilesController *serverfiles.Controller,
 	websiteController *website.Controller,
+	zoneControllerController *zonecontroller.Controller,
+	ultimateSystemsController *ultsystems.Controller,
 ) *appControllerGroups {
 	return &appControllerGroups{
 		authControllers: []routes.Controller{
@@ -240,6 +246,8 @@ func provideControllers(
 			lanternController,
 			serverFilesController,
 			websiteController,
+			zoneControllerController,
+			ultimateSystemsController,
 		},
 		v1controllersNoAuth: []routes.Controller{
 			quest,

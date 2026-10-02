@@ -10,7 +10,7 @@ import {scrollToHash} from "@/app/utility/scrollToTarget";
 Vue.use(Router)
 
 const router = new Router({
-  mode: 'history',
+  mode: process.env.VUE_APP_DEMO === "true" ? "hash" : "history",
   linkActiveClass: 'active',
   linkExactActiveClass: 'active',
   stringifyQuery: query => {
@@ -195,6 +195,31 @@ const router = new Router({
           path: ROUTE.ZONES,
           component: () => import('./views/zone/Zones.vue'),
           meta: {title: "Zones"},
+        },
+        {
+          path: ROUTE.ZONE_CONTROLLER_BUILDER,
+          component: () => import('./views/zone/ZoneControllerBuilder.vue'),
+          meta: {title: "Zone Controller Builder"},
+        },
+        {
+          path: ROUTE.ULTIMATE_SYSTEMS,
+          component: () => import('./views/systems/UltimateSystems.vue'),
+          meta: {title: "Ultimate Systems"},
+        },
+        {
+          path: ROUTE.ZONE_CONTROLLER_SYSTEMS,
+          component: () => import('./views/zone/ZoneController.vue'),
+          meta: {title: "Zone Controller Systems"},
+        },
+        {
+          path: ROUTE.ZONE_CONTROLLER_ZONE,
+          component: () => import('./views/zone/ZoneController.vue'),
+          meta: {title: "Zone Controller"},
+        },
+        {
+          path: ROUTE.ZONE_CONTROLLER,
+          component: () => import('./views/zone/ZoneController.vue'),
+          meta: {title: "Zone Controller"},
         },
         {
           path: ROUTE.RELEASES,

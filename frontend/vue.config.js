@@ -5,6 +5,7 @@ const sageLocal = process.env.SAGE_LOCAL_DEV === "true";
 const sageTarget = sageLocal ? "http://127.0.0.1:4100" : "https://eqsage.vercel.app";
 
 module.exports = {
+  publicPath: process.env.VUE_APP_PUBLIC_PATH || "/",
   devServer: {
     host: "0.0.0.0",
     disableHostCheck: true,
@@ -57,7 +58,7 @@ module.exports = {
     config.performance.maxEntrypointSize(40000000).maxAssetSize(40000000);
 
     // ignore asset preview during development to keep build times down
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV !== "production" || process.env.VUE_APP_DEMO === "true") {
       config.plugin("copy").tap(([options]) => {
         options[0].ignore.push("eq-asset-preview-master/**/*");
 

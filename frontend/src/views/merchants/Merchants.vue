@@ -6,67 +6,63 @@
 
         <!-- form inputs -->
         <eq-window title="Merchant Editor">
-          <div class="row">
-            <div class="col-lg-3">
+          <div class="ui-toolbar">
+            <div class="ui-field" style="flex: 1 1 180px; margin-bottom: 0">
+              <label>Merchant name</label>
               <input
                 type="text"
-                class="form-control ml-2"
-                placeholder="Merchants by Name"
+                class="form-control form-control-sm"
+                placeholder="Merchants by name"
                 v-model="search"
                 @keyup.enter="zoneSelection = 0; searchItemName = ''; updateQueryState()"
                 autofocus
               >
             </div>
-
-            <div class="col-lg-2">
+            <div class="ui-field" style="flex: 1 1 160px; margin-bottom: 0">
+              <label>Item</label>
               <input
                 type="text"
-                class="form-control ml-2"
-                placeholder="Item Name or ID"
+                class="form-control form-control-sm"
+                placeholder="Item name or ID"
                 v-model="searchItemName"
                 @keyup.enter="zoneSelection = 0; search = ''; updateQueryState()"
               >
             </div>
-
-            <div class="col-lg-2">
+            <div class="ui-field" style="flex: 1 1 220px; margin-bottom: 0">
+              <label>Zone</label>
               <select
-                class="form-control"
+                class="form-control form-control-sm"
                 v-model="zoneSelection"
                 @change="search = ''; searchItemName = ''; updateQueryState()"
               >
-                <option value="0">-- Select --</option>
-                <option v-for="z in zones" v-bind:value="{z: z.short_name, v: z.version}">
-                  {{ z.short_name }} ({{ z.version }}) ({{ z.zoneidnumber }}) {{ z.long_name }}
+                <option value="0">All zones</option>
+                <option v-for="z in zones" :key="z.short_name + '-' + z.version" v-bind:value="{z: z.short_name, v: z.version}">
+                  {{ z.short_name }} ({{ z.version }}) {{ z.long_name }}
                 </option>
               </select>
             </div>
-
-            <div class="col-lg-5 text-center p-0 mt-1">
-              <div class="btn-group" role="group" aria-label="Basic example">
-                <b-button title="Search" @click="updateQueryState()" size="sm" variant="outline-warning">
-                  <i class="fa fa-search"></i> Search
-                </b-button>
-                <b-button
-                  title="Show all Merchant Tables"
-                  @click="reset(); showAll = true; updateQueryState()"
-                  size="sm"
-                  variant="outline-warning"
-                >
-                  <i class="ra ra-emerald"></i> All
-                </b-button>
-                <b-button title="Reset" @click="reset(); updateQueryState()" size="sm" variant="outline-danger">
-                  <i class="fa fa-eraser"></i> Reset
-                </b-button>
-                <b-button
-                  title="Create New Merchant Table"
-                  @click="createNewMerchant();"
-                  size="sm"
-                  variant="outline-success"
-                >
-                  <i class="ra ra-emerald"></i> New Merchant
-                </b-button>
-              </div>
-            </div>
+            <b-button title="Search" @click="updateQueryState()" size="sm" variant="primary">
+              <i class="fa fa-search"></i> Search
+            </b-button>
+            <b-button
+              title="Show all Merchant Tables"
+              @click="reset(); showAll = true; updateQueryState()"
+              size="sm"
+              variant="outline-secondary"
+            >
+              All
+            </b-button>
+            <b-button title="Reset" @click="reset(); updateQueryState()" size="sm" variant="outline-danger">
+              Reset
+            </b-button>
+            <b-button
+              title="Create New Merchant Table"
+              @click="createNewMerchant();"
+              size="sm"
+              variant="outline-success"
+            >
+              New
+            </b-button>
           </div>
         </eq-window>
 

@@ -17,7 +17,7 @@ import {LocalSettings, Setting} from "@/app/local-settings/localsettings";
 // @akkadius - I was using a CDN to host these files and decided for simplicty to require them as part
 // of how the application gets bootstrapped and bundled
 // These assets get pulled down during install and during release build but do not get checked in "ever"
-let ASSET_CDN_BASE_URL_INT = "/eq-asset-preview-master/";
+let ASSET_CDN_BASE_URL_INT = (process.env.BASE_URL || "/") + "eq-asset-preview-master/";
 
 export const App = {
   ASSET_CDN_BASE_URL: ASSET_CDN_BASE_URL_INT,

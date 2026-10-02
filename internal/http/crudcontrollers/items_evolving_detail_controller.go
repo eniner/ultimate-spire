@@ -38,6 +38,7 @@ func (e *ItemsEvolvingDetailController) Routes() []*routes.Route {
 		routes.RegisterRoute(http.MethodDelete, "items_evolving_detail/:id", e.deleteItemsEvolvingDetail, nil),
 		routes.RegisterRoute(http.MethodPatch, "items_evolving_detail/:id", e.updateItemsEvolvingDetail, nil),
 		routes.RegisterRoute(http.MethodPost, "items_evolving_details/bulk", e.getItemsEvolvingDetailsBulk, nil),
+		routes.RegisterRoute(http.MethodPost, "items_evolving_details/synchronize", e.synchronizeChain, nil),
 	}
 }
 
@@ -164,6 +165,7 @@ func (e *ItemsEvolvingDetailController) updateItemsEvolvingDetail(c echo.Context
 
 	// save top-level using only changes
 	diff := database.ResultDifference(result, request)
+	diff = database.LimitDiffToJSON(c, request, diff)
 	err = query.Session(&gorm.Session{FullSaveAssociations: false}).Updates(diff).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error updating entity [%v]", err.Error())})
@@ -362,4 +364,63 @@ func (e *ItemsEvolvingDetailController) getItemsEvolvingDetailsCount(c echo.Cont
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{"count": count})
+}
+
+type synchronizeChainRequest struct {
+	ItemEvoID uint `json:"item_evo_id"`
+}
+
+func (e *ItemsEvolvingDetailController) synchronizeChain(c echo.Context) error {
+	req := new(synchronizeChainRequest)
+	if err := c.Bind(req); err != nil || req.ItemEvoID == 0 {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "item_evo_id is required"})
+	}
+	db := e.db.Get(models.ItemsEvolvingDetail{}, c)
+	var rows []models.ItemsEvolvingDetail
+	if err := db.Where("item_evo_id = ?", req.ItemEvoID).Order("item_evolve_level").Find(&rows).Error; err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+	if len(rows) == 0 {
+		return c.JSON(http.StatusNotFound, echo.Map{"error": "no evolving details for that chain"})
+	}
+	maxLevel := 0
+	for _, row := range rows {
+		if row.ItemEvolveLevel.Valid && int(row.ItemEvolveLevel.Uint) > maxLevel {
+			maxLevel = int(row.ItemEvolveLevel.Uint)
+		}
+	}
+	err := db.Transaction(func(tx *gorm.DB) error {
+		for _, row := range rows {
+			if !row.ItemId.Valid || row.ItemId.Uint == 0 {
+				return fmt.Errorf("detail %d has no item_id", row.ID)
+			}
+			updates := map[string]interface{}{
+				"evoid":         int(req.ItemEvoID),
+				"evolvinglevel": int(row.ItemEvolveLevel.Uint),
+				"evomax":        maxLevel,
+				"evoitem":       1,
+			}
+			res := tx.Model(&models.Item{}).Where("id = ?", row.ItemId.Uint).Updates(updates)
+			if res.Error != nil {
+				return res.Error
+			}
+			if res.RowsAffected == 0 {
+				var exists int64
+				if err := tx.Model(&models.Item{}).Where("id = ?", row.ItemId.Uint).Count(&exists).Error; err != nil {
+					return err
+				}
+				if exists != 1 {
+					return fmt.Errorf("item %d was not updated", row.ItemId.Uint)
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return c.JSON(http.StatusConflict, echo.Map{"error": err.Error()})
+	}
+	if e.db.GetSpireDb() != nil {
+		e.auditLog.LogUserEvent(c, "UPDATE", fmt.Sprintf("Synchronized evolving chain [%d] (%d items)", req.ItemEvoID, len(rows)))
+	}
+	return c.JSON(http.StatusOK, echo.Map{"ok": true, "count": len(rows), "evomax": maxLevel})
 }

@@ -1,160 +1,130 @@
 <template>
   <div>
-    <eq-window-simple class="pt-0 mt-0">
-      <div class="row">
-        <div v-for="(icon, index) in dbClassIcons" class="text-center">
-          <div class="text-center p-0 mr-3 col-lg-12 col-sm-12">
-            {{ dbClassesShort[index] }}
-            <div class="text-center">
-              <span
-                @click="selectClass(index)"
-                :style="'width:40px;' + (isClassSelected(index) ? 'border-radius: 7px;' : 'border-radius: 7px;')"
-                :class="'hover-highlight-inner item-' + icon + ' ' + (isClassSelected(index) ? 'highlight-selected-inner' : '')"
-              />
-            </div>
+    <eq-window-simple title="Spells">
+      <div class="ui-section">
+        <div class="ui-section-head">
+          <h6 class="ui-section-title">Class</h6>
+        </div>
+        <div class="spell-class-row">
+          <div v-for="(icon, index) in dbClassIcons" :key="index" class="spell-class">
+            <div class="spell-class-label">{{ dbClassesShort[index] }}</div>
+            <span
+              @click="selectClass(index)"
+              :class="'hover-highlight-inner item-' + icon + (isClassSelected(index) ? ' highlight-selected-inner' : '')"
+            />
           </div>
         </div>
       </div>
 
-      <div class="row mt-2">
-        <div class="col-lg-2 col-sm-12 text-center pl-0">
-          Spell Name or ID
+      <div class="ui-toolbar">
+        <div class="ui-field" style="flex: 2 1 200px; margin-bottom: 0">
+          <label for="spell_name">Name or ID</label>
           <input
             name="spell_name"
             type="text"
-            class="form-control"
+            class="form-control form-control-sm"
             autofocus
             v-on:keyup.enter="triggerState"
             v-model="spellName"
             placeholder="Name or ID"
             id="spell_name"
-            value=""
           >
         </div>
 
-        <div class="col-lg-2 col-sm-12 text-center">
-          Spell Effect SPA
+        <div class="ui-field" style="flex: 2 1 220px; margin-bottom: 0">
+          <label for="spell_effect">Spell effect (SPA)</label>
           <select
             name="class"
             id="spell_effect"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="selectedSpa"
             @change="triggerState()"
           >
-
-            <option value="-1">-- Select --</option>
-            <option v-for="(spellEffect, id) in dbSpellEffects" v-bind:value="id">
+            <option value="-1">Any effect</option>
+            <option v-for="(spellEffect, id) in dbSpellEffects" :key="id" v-bind:value="id">
               {{ id }}) {{ spellEffect }}
             </option>
-
           </select>
-
         </div>
 
-        <div class="col-lg-1 col-sm-12 text-center">
-          Level
+        <div class="ui-field" style="flex: 0 1 90px; margin-bottom: 0">
+          <label for="Class">Level</label>
           <select
             name="class"
             id="Class"
-            class="form-control"
+            class="form-control form-control-sm"
             v-model="selectedLevel"
             @change="selectClass(selectedClass)"
           >
-            <option value="0">-- Select --</option>
-            <option v-for="l in 105" v-bind:value="l">
+            <option value="0">Any</option>
+            <option v-for="l in 105" :key="l" v-bind:value="l">
               {{ l }}
             </option>
           </select>
         </div>
 
-        <div class="col-lg-6 col-sm-12 mt-3 pl-0 pr-0">
-          <div class="btn-group ml-3" role="group" v-if="selectedLevel">
-            <b-button
-              @click="selectedLevelType = 0; triggerStateDelayed();"
-              size="sm"
-              :variant="(parseInt(selectedLevelType) === 0 ? 'warning' : 'outline-warning')"
-            >Only
-            </b-button>
-            <b-button
-              @click="selectedLevelType = 1; triggerStateDelayed();"
-              size="sm"
-              :variant="(parseInt(selectedLevelType) === 1 ? 'warning' : 'outline-warning')"
-            >Higher
-            </b-button>
-            <b-button
-              @click="selectedLevelType = 2; triggerStateDelayed();"
-              size="sm"
-              :variant="(parseInt(selectedLevelType) === 2 ? 'warning' : 'outline-warning')"
-            >Lower
-            </b-button>
-          </div>
-
-          <div class="btn-group ml-3" role="group" aria-label="Basic example">
-            <b-button
-              alt="Display as table"
-              @click="listType = 'table'; "
-              size="sm"
-              :variant="(listType === 'table' ? 'warning' : 'outline-warning')"
-            ><i class="fa fa-table"></i></b-button>
-            <b-button
-              alt="Display as grid"
-              @click="listType = 'card'; "
-              size="sm"
-              :variant="(listType === 'card' ? 'warning' : 'outline-warning')"
-            ><i class="fa fa-th"></i></b-button>
-          </div>
-
-          <div class="btn-group ml-3" role="group" aria-label="Basic example">
-            <b-button
-              @click="limit = 10; triggerStateDelayed()"
-              size="sm"
-              :variant="(parseInt(limit) === 10 ? 'warning' : 'outline-warning')"
-            >10
-            </b-button>
-            <b-button
-              @click="limit = 100; triggerStateDelayed()"
-              size="sm"
-              :variant="(parseInt(limit) === 100 ? 'warning' : 'outline-warning')"
-            >100
-            </b-button>
-            <b-button
-              @click="limit = 250; triggerStateDelayed()"
-              size="sm"
-              :variant="(parseInt(limit) === 250 ? 'warning' : 'outline-warning')"
-            >250
-            </b-button>
-            <b-button
-              @click="limit = 1000; triggerStateDelayed()"
-              size="sm"
-              :variant="(parseInt(limit) === 1000 ? 'warning' : 'outline-warning')"
-            >1000
-            </b-button>
-          </div>
-
-          <div
-            :class="'text-center btn-xs eq-button-fancy ml-3'"
-            style="line-height: 25px;"
-            @click="resetForm()"
-          >
-            Reset Form
-          </div>
-
+        <div class="btn-group" role="group" v-if="selectedLevel">
+          <b-button
+            @click="selectedLevelType = 0; triggerStateDelayed();"
+            size="sm"
+            :variant="(parseInt(selectedLevelType) === 0 ? 'warning' : 'outline-secondary')"
+          >Only
+          </b-button>
+          <b-button
+            @click="selectedLevelType = 1; triggerStateDelayed();"
+            size="sm"
+            :variant="(parseInt(selectedLevelType) === 1 ? 'warning' : 'outline-secondary')"
+          >Higher
+          </b-button>
+          <b-button
+            @click="selectedLevelType = 2; triggerStateDelayed();"
+            size="sm"
+            :variant="(parseInt(selectedLevelType) === 2 ? 'warning' : 'outline-secondary')"
+          >Lower
+          </b-button>
         </div>
 
-      </div>
-
-      <div class="row mt-3">
-        <div class="col-12 p-0">
-          <db-column-filter
-            v-if="spellFields && filters"
-            :set-filters="filters"
-            @input="handleDbColumnFilters($event);"
-            :columns="spellFields"
-          />
+        <div class="btn-group" role="group" aria-label="Result layout">
+          <b-button
+            title="Show as table"
+            @click="listType = 'table'; "
+            size="sm"
+            :variant="(listType === 'table' ? 'warning' : 'outline-secondary')"
+          ><i class="fa fa-table"></i></b-button>
+          <b-button
+            title="Show as cards"
+            @click="listType = 'card'; "
+            size="sm"
+            :variant="(listType === 'card' ? 'warning' : 'outline-secondary')"
+          ><i class="fa fa-th"></i></b-button>
         </div>
+
+        <div class="btn-group" role="group" aria-label="Results per page">
+          <b-button
+            v-for="n in [10, 100, 250, 1000]"
+            :key="n"
+            @click="limit = n; triggerStateDelayed()"
+            size="sm"
+            :variant="(parseInt(limit) === n ? 'warning' : 'outline-secondary')"
+          >{{ n }}
+          </b-button>
+        </div>
+
+        <b-button size="sm" variant="link" @click="resetForm()">Reset</b-button>
       </div>
 
-      <div v-if="message">
+      <div class="ui-section" v-if="spellFields && filters">
+        <div class="ui-section-head">
+          <h6 class="ui-section-title">Column filters</h6>
+        </div>
+        <db-column-filter
+          :set-filters="filters"
+          @input="handleDbColumnFilters($event);"
+          :columns="spellFields"
+        />
+      </div>
+
+      <div class="ui-stat-line" v-if="message">
         {{ message }}
       </div>
 
@@ -503,3 +473,22 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.spell-class-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.spell-class {
+  text-align: center;
+  min-width: 40px;
+}
+
+.spell-class-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+</style>

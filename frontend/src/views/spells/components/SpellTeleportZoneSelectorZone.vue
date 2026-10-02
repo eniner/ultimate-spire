@@ -129,7 +129,7 @@ export default {
     },
 
     getExpansionIcon(expansion) {
-      return Expansions.getExpansionIconUrlSmall(expansion)
+      return Expansions.getExpansionIconUrlSmall(Expansions.fromZoneTable(expansion))
     },
 
     async loadZones() {

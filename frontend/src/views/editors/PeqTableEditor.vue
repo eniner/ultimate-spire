@@ -3,9 +3,9 @@
     <div class="row">
       <div :class="selected ? 'col-7' : 'col-12'">
         <eq-window :title="title" class="p-3">
-          <div class="row align-items-end">
-            <div class="col-md-4">
-              <label class="small mb-0">Search</label>
+          <div class="ui-toolbar">
+            <div class="ui-field" style="flex: 1 1 220px; margin-bottom: 0">
+              <label>Search</label>
               <input
                 class="form-control form-control-sm"
                 v-model="search"
@@ -13,8 +13,8 @@
                 placeholder="Name or id"
               >
             </div>
-            <div class="col-md-3" v-if="hasZoneFilter">
-              <label class="small mb-0">Zone</label>
+            <div class="ui-field" style="flex: 1 1 220px; margin-bottom: 0" v-if="hasZoneFilter">
+              <label>Zone</label>
               <select class="form-control form-control-sm" v-model="zoneValue" @change="page = 1; load()">
                 <option value="">All zones</option>
                 <option v-for="z in zones" :key="z.short_name + '-' + z.version" :value="zoneOptionValue(z)">
@@ -22,14 +22,12 @@
                 </option>
               </select>
             </div>
-            <div class="col-md-5">
-              <button class="btn btn-sm btn-dark mr-1" @click="page = 1; load()">Search</button>
-              <button class="btn btn-sm btn-dark mr-1" @click="reset()">Reset</button>
-              <button class="btn btn-sm btn-dark mr-1" v-if="canCreate" @click="createRow()">New</button>
-              <router-link class="btn btn-sm btn-dark" to="/editors">All editors</router-link>
-            </div>
+            <button class="btn btn-sm btn-dark" @click="page = 1; load()">Search</button>
+            <button class="btn btn-sm btn-dark" @click="reset()">Reset</button>
+            <button class="btn btn-sm btn-dark" v-if="canCreate" @click="createRow()">New</button>
+            <router-link class="btn btn-sm btn-dark" to="/editors">All editors</router-link>
+            <div class="ui-stat-line" v-if="status">{{ status }}</div>
           </div>
-          <div class="small mt-2" v-if="status">{{ status }}</div>
         </eq-window>
 
         <eq-window class="p-0">
@@ -78,23 +76,26 @@
 
       <div class="col-5" v-if="selected">
         <eq-window title="Edit row" class="p-3">
-          <div class="form-group" v-for="col in editColumns" :key="col">
-            <label class="small mb-0">{{ col }}</label>
-            <input
-              class="form-control form-control-sm"
-              :value="selected[col]"
-              @input="onField(col, $event)"
-            >
+          <div class="ui-field-grid">
+            <div class="form-group" v-for="col in editColumns" :key="col">
+              <label>{{ col }}</label>
+              <input
+                class="form-control form-control-sm"
+                :value="selected[col]"
+                :disabled="isIdentityField(col)"
+                @input="onField(col, $event)"
+              >
+            </div>
           </div>
-          <div>
-            <button class="btn btn-sm btn-dark mr-1" :disabled="saving" @click="saveRow">
+          <div class="ui-toolbar" style="margin-top: 8px; margin-bottom: 0">
+            <button class="btn btn-sm btn-dark" :disabled="saving" @click="saveRow">
               {{ saving ? "Saving…" : "Save" }}
             </button>
             <button class="btn btn-sm btn-outline-danger" v-if="canDelete" :disabled="saving" @click="deleteRow">Delete</button>
             <router-link
               v-for="action in rowActions"
               :key="'side-' + action.label"
-              class="btn btn-sm btn-dark ml-1"
+              class="btn btn-sm btn-dark"
               :to="actionTo(action, selected)"
             >{{ action.label }}</router-link>
           </div>
@@ -131,6 +132,7 @@ export default {
       loading: false,
       saving: false,
       status: "",
+      original: null,
     }
   },
   computed: {
@@ -160,6 +162,23 @@ export default {
       return Object.keys(this.selected).filter((key) => {
         return this.isScalar(this.selected[key]) && hide.indexOf(key) === -1
       })
+    },
+    identityFields() {
+      const fields = []
+      const add = (field) => {
+        if (field && fields.indexOf(field) === -1) {
+          fields.push(field)
+        }
+      }
+      add(this.idField)
+      const table = this.table()
+      if (table && table.rowKeyFields) {
+        table.rowKeyFields.forEach(add)
+      }
+      if (table && table.idQuery) {
+        table.idQuery.forEach((item) => add(item.field))
+      }
+      return fields
     },
   },
   watch: {
@@ -199,17 +218,34 @@ export default {
     },
     extraOptions(row) {
       const table = this.table()
-      if (!table || !table.idQuery || !table.idQuery.length || !row) {
+      const source = this.original || row
+      if (!table || !table.idQuery || !table.idQuery.length || !source) {
         return undefined
       }
       const query = {}
       table.idQuery.forEach((item) => {
-        const value = row[item.field]
+        const value = source[item.field]
         if (value !== undefined && value !== null && value !== "") {
           query[item.query] = value
         }
       })
       return Object.keys(query).length ? { query } : undefined
+    },
+    isIdentityField(col) {
+      return this.identityFields.indexOf(col) !== -1
+    },
+    dirtyBody(row) {
+      const body = {}
+      Object.keys(row || {}).forEach((key) => {
+        if (!this.isScalar(row[key]) || this.isIdentityField(key)) {
+          return
+        }
+        if (this.original && String(this.original[key]) === String(row[key])) {
+          return
+        }
+        body[key] = row[key]
+      })
+      return body
     },
     isScalar(value) {
       return value === null || value === undefined || typeof value !== "object"
@@ -241,6 +277,7 @@ export default {
       this.tableCfg = getPeqTableConfig(this.$route.params.id)
       this.rows = []
       this.selected = null
+      this.original = null
       this.search = this.$route.query.search || ""
       this.zoneValue = this.$route.query.zone || ""
       this.page = parseInt(this.$route.query.page, 10) || 1
@@ -259,6 +296,7 @@ export default {
       this.zoneValue = ""
       this.page = 1
       this.selected = null
+      this.original = null
       this.load()
     },
     onPage(next) {
@@ -267,6 +305,7 @@ export default {
     },
     selectRow(row) {
       this.selected = Object.assign({}, row)
+      this.original = Object.assign({}, row)
     },
     onField(col, event) {
       if (!this.selected) {
@@ -338,9 +377,12 @@ export default {
           this.totalRows = this.rows.length
         }
         if (this.selected) {
-          const key = this.rowKey(this.selected)
+          const key = this.original ? this.rowKey(this.original) : this.rowKey(this.selected)
           const still = this.rows.find((row) => this.rowKey(row) === key)
-          this.selected = still ? Object.assign({}, still) : this.selected
+          if (still) {
+            this.selected = Object.assign({}, still)
+            this.original = Object.assign({}, still)
+          }
         }
       } catch (err) {
         this.status = this.errorText(err)
@@ -372,6 +414,7 @@ export default {
           const createdKey = this.rowKey(r.data)
           const created = this.rows.find((row) => this.rowKey(row) === createdKey)
           this.selected = created ? Object.assign({}, created) : Object.assign({}, r.data)
+          this.original = Object.assign({}, this.selected)
         }
       } catch (err) {
         this.status = this.errorText(err)
@@ -382,15 +425,21 @@ export default {
     async saveRow() {
       const table = this.table()
       const api = this.client()
-      if (!table || !api || !this.selected || this.rowId(this.selected) === undefined || this.rowId(this.selected) === null) {
+      const identity = this.original || this.selected
+      if (!table || !api || !this.selected || this.rowId(identity) === undefined || this.rowId(identity) === null) {
+        return
+      }
+      const body = this.dirtyBody(this.selected)
+      if (!Object.keys(body).length) {
+        this.status = "No changes"
         return
       }
       this.saving = true
       this.status = ""
       try {
-        const payload = { id: this.rowId(this.selected) }
-        payload[table.bodyKey] = this.selected
-        await api[table.update](payload, this.extraOptions(this.selected))
+        const payload = { id: this.rowId(identity) }
+        payload[table.bodyKey] = body
+        await api[table.update](payload, this.extraOptions(identity))
         this.status = "Saved"
         await this.load()
       } catch (err) {
@@ -402,18 +451,20 @@ export default {
     async deleteRow() {
       const table = this.table()
       const api = this.client()
-      if (!table || !api || !this.selected || this.rowId(this.selected) === undefined || this.rowId(this.selected) === null) {
+      const identity = this.original || this.selected
+      if (!table || !api || !identity || this.rowId(identity) === undefined || this.rowId(identity) === null) {
         return
       }
-      if (!confirm("Delete " + this.title + " #" + this.rowId(this.selected) + "?")) {
+      if (!confirm("Delete " + this.title + " #" + this.rowId(identity) + "?")) {
         return
       }
       this.saving = true
       this.status = ""
       try {
-        await api[table.delete]({ id: this.rowId(this.selected) }, this.extraOptions(this.selected))
+        await api[table.delete]({ id: this.rowId(identity) }, this.extraOptions(identity))
         this.status = "Deleted"
         this.selected = null
+        this.original = null
         await this.load()
       } catch (err) {
         this.status = this.errorText(err)

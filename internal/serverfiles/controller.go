@@ -2,9 +2,11 @@ package serverfiles
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/EQEmu/spire/internal/auditlog"
 	"github.com/EQEmu/spire/internal/eqemuserverconfig"
 	"github.com/EQEmu/spire/internal/http/routes"
 	"github.com/EQEmu/spire/internal/pathmgmt"
@@ -12,11 +14,12 @@ import (
 )
 
 type Controller struct {
-	svc *Service
+	svc      *Service
+	auditLog *auditlog.UserEvent
 }
 
-func NewController(pathmgmt *pathmgmt.PathManagement, config *eqemuserverconfig.Config) *Controller {
-	return &Controller{svc: NewService(pathmgmt, config)}
+func NewController(pathmgmt *pathmgmt.PathManagement, config *eqemuserverconfig.Config, auditLog *auditlog.UserEvent) *Controller {
+	return &Controller{svc: NewService(pathmgmt, config), auditLog: auditLog}
 }
 
 func (e *Controller) Routes() []*routes.Route {
@@ -128,12 +131,14 @@ func (e *Controller) getFile(c echo.Context) error {
 		"path":     rel,
 		"writable": conn.Writable,
 		"content":  body,
+		"hash":     fileHash(body),
 	})
 }
 
 type fileBody struct {
-	Path    string `json:"path"`
-	Content string `json:"content"`
+	Path         string `json:"path"`
+	Content      string `json:"content"`
+	ExpectedHash string `json:"expectedHash"`
 }
 
 func (e *Controller) saveFile(c echo.Context) error {
@@ -156,10 +161,21 @@ func (e *Controller) writeFile(c echo.Context, create bool) error {
 	if err := c.Bind(req); err != nil || strings.TrimSpace(req.Path) == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "path is required"})
 	}
-	if err := e.svc.writeLocal(conn.Root, req.Path, req.Content, create); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	if err := e.svc.writeLocal(conn.Root, req.Path, req.Content, req.ExpectedHash, create); err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, errStaleFile) {
+			status = http.StatusConflict
+		}
+		return c.JSON(status, echo.Map{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, echo.Map{"ok": true, "path": req.Path})
+	if e.auditLog != nil {
+		action := "UPDATE"
+		if create {
+			action = "CREATE"
+		}
+		e.auditLog.LogUserEvent(c, action, fmt.Sprintf("Server files %s [%s]", strings.ToLower(action), req.Path))
+	}
+	return c.JSON(http.StatusOK, echo.Map{"ok": true, "path": req.Path, "hash": fileHash(req.Content)})
 }
 
 func (e *Controller) search(c echo.Context) error {

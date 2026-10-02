@@ -79,6 +79,59 @@ func TestParseObjectInstances(t *testing.T) {
 	}
 }
 
+func TestWriteObjectInstancesRoundTrip(t *testing.T) {
+	root := t.TempDir()
+	zone := "crushbone"
+	if err := os.MkdirAll(filepath.Join(root, zone, "Zone"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, zone, "Objects"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, zone, "Objects", "tree.glb"), []byte("glb"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, zone, "Zone", "object_instances.txt"), []byte("tree,0,0,0,0,0,0,1,1,1,0\n"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	err := writeObjectInstances(root, zone, []ObjectInstance{{
+		ModelName:  "tree",
+		Pos:        [3]float64{10, 20, 30},
+		Rot:        [3]float64{0, 90, 0},
+		Scale:      [3]float64{1, 1, 1},
+		ColorIndex: -1,
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := parseObjectInstances(root, zone)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 1 || got[0].Pos[0] != 10 || got[0].Rot[1] != 90 || got[0].ColorIndex != -1 {
+		t.Fatalf("unexpected rewrite %#v", got)
+	}
+	if _, err := os.Stat(filepath.Join(root, zone, "Zone", "object_instances.txt.bak")); err != nil {
+		t.Fatalf("expected backup: %v", err)
+	}
+}
+
+func TestWriteObjectInstancesRejectsMissingModel(t *testing.T) {
+	root := t.TempDir()
+	zone := "crushbone"
+	if err := os.MkdirAll(filepath.Join(root, zone, "Zone"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	err := writeObjectInstances(root, zone, []ObjectInstance{{
+		ModelName: "missing",
+		Scale:     [3]float64{1, 1, 1},
+	}})
+	if err == nil {
+		t.Fatal("expected missing model to fail")
+	}
+}
+
 func TestListZonesRequiresCanonicalMesh(t *testing.T) {
 	root := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(root, "abh", "Characters"), 0755); err != nil {

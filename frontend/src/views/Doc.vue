@@ -1,39 +1,20 @@
 <template>
-  <div class="row justify-content-center" v-if="title">
-    <div class="col-12 col-lg-10 col-xl-7">
-      <!-- CONTENT -->
-      <div class="container-fluid">
-
-
-        <div class="header mt-md-0 mt-6">
-          <div class="header-body">
-
-            <!-- Title -->
-            <h1 class="header-title mb-4 mt-4" style="font-size: 40px">
-              {{ title }}
-            </h1>
-
-            <!-- Subtitle -->
-            <p class="header-subtitle">
-              {{ description }}
-            </p>
-
-          </div>
-        </div>
-
-        <v-runtime-template :template="doc" class="pb-6 mt-3 doc"/>
-
-      </div>
-    </div>
+  <div v-if="title">
+    <eq-window :title="title">
+      <p class="ui-stat-line" v-if="description">{{ description }}</p>
+      <v-runtime-template :template="doc" class="doc markdown-body"/>
+    </eq-window>
   </div>
-
 </template>
 
 <script>
 import {SpireApi} from "@/app/api/spire-api";
+import hljs from "@/app/hljs";
+import EqWindow from "@/components/eq-ui/EQWindow";
 
 export default {
   components: {
+    EqWindow,
     "page-header": () => import("@/components/layout/PageHeader"),
     "v-runtime-template": () => import("v-runtime-template")
   },
@@ -67,7 +48,6 @@ export default {
       SpireApi.v1().get(`/doc/${page}`).then((response) => {
         if (response.data && response.data.data) {
 
-          // const hljs = require("highlight.js");
           const md   = require("markdown-it")({
             html: true,
             xhtmlOut: false,
@@ -77,7 +57,7 @@ export default {
               if (lang && hljs.getLanguage(lang)) {
                 try {
                   return "<div class='card'><div class='card-footer bg-dark'><pre class=\"highlight html bg-dark hljs mb-0 " + lang + "\">" +
-                    hljs.highlight(lang, str, true).value +
+                    hljs.highlight(str, {language: lang, ignoreIllegals: true}).value +
                     "</pre></div></div>";
                 } catch (__) {
                 }

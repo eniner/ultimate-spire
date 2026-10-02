@@ -8,7 +8,8 @@
       <div class="col-5 mt-2 text-muted" style="font-size: 12px">{{ field.help }}</div>
     </div>
     <div class="text-muted text-center mt-1 mb-3" style="font-size: 12px">
-      These four item columns save with "Save Item". The chain rows below save with their own buttons.
+      Order: edit the chain rows below first, then set these four item columns (or Save Item) so they match.
+      Type 4 subtype is zone IDs; required amount is the kill count.
     </div>
 
     <div class="d-flex align-items-center mb-2">
@@ -80,7 +81,15 @@
           </td>
           <td>
             <input type="text" class="form-control form-control-sm" v-model="r.sub_type">
-            <small class="text-muted">{{ describeSubType(r) }}</small>
+            <small v-if="Number(r.type) !== 4" class="text-muted">{{ describeSubType(r) }}</small>
+            <div v-if="Number(r.type) === 4" class="evo-zones">
+              <span
+                v-for="z in zoneList(r.sub_type)"
+                :key="r.id + '-' + z.id"
+                class="evo-zone-pill"
+                :class="{ 'is-missing': !z.name }"
+              >{{ z.id }}{{ z.name ? ' ' + z.name : '' }}</span>
+            </div>
           </td>
           <td><input type="number" class="form-control form-control-sm" v-model.number="r.required_amount"></td>
           <td>
@@ -103,6 +112,7 @@
 import * as util                         from "util";
 import {ROUTE}                           from "../../../routes";
 import {EVOLVING_TYPES, EvolvingItems}   from "../../../app/evolving-items";
+import {Zones}                           from "../../../app/zones";
 
 export default {
   name: "ItemEvolvingTab",
@@ -120,6 +130,7 @@ export default {
       ownRows: [],
       items: {},
       analysis: { problems: [], rowIssues: {}, missing: [], maxLevel: 0 },
+      zoneNames: {},
       itemFields: [
         { field: "evoitem", description: "Evolving Item (evoitem)", help: "1 = this item evolves" },
         { field: "evoid", description: "Evolution ID (evoid)", help: "items_evolving_details.item_evo_id of the chain" },
@@ -146,7 +157,13 @@ export default {
       return util.format(ROUTE.ITEM_EDIT, id)
     },
     describeSubType(r) {
-      return EvolvingItems.describeSubType(r.type, r.sub_type)
+      return EvolvingItems.describeSubType(r.type, r.sub_type, this.zoneNames)
+    },
+    zoneList(subType) {
+      return EvolvingItems.parseIdList(subType).map((id) => ({
+        id,
+        name: this.zoneNames[id] || "",
+      }))
     },
     split(p) {
       return EvolvingItems.splitProblem(p)
@@ -156,13 +173,21 @@ export default {
       this.error        = ""
       this.notification = ""
       try {
-        const all     = await EvolvingItems.listDetails()
-        this.ownRows  = all.filter((d) => d.item_id === this.item.id)
-        this.rows     = EvolvingItems.groupChains(all)[this.item.evoid] || []
-        this.items    = this.rows.length ? await EvolvingItems.loadItemsFor(this.rows) : {}
+        this.ownRows = await EvolvingItems.listDetailsForItems([this.item.id])
+        this.rows = this.item.evoid ? await EvolvingItems.listDetails(this.item.evoid) : []
+        const related = this.rows.concat(this.ownRows)
+        this.items = related.length ? await EvolvingItems.loadItemsFor(related) : {}
         this.analysis = this.rows.length
-          ? EvolvingItems.analyzeChain(this.rows, this.items, all)
+          ? EvolvingItems.analyzeChain(this.rows, this.items, related)
           : { problems: [], rowIssues: {}, missing: [], maxLevel: 0 }
+        const zones = await Zones.getZones()
+        const names = {}
+        ;(zones || []).forEach((z) => {
+          if (z && z.zoneidnumber && !names[z.zoneidnumber]) {
+            names[z.zoneidnumber] = z.long_name || z.short_name
+          }
+        })
+        this.zoneNames = names
       } catch (e) {
         this.error = (e.response && e.response.data && e.response.data.error) || e.message
       }
@@ -173,7 +198,7 @@ export default {
       try {
         await EvolvingItems.updateDetail(r)
         this.notification = "Saved level " + r.item_evolve_level + ". Restart zones for the server to use it."
-        this.analysis     = EvolvingItems.analyzeChain(this.rows, this.items, this.rows)
+        this.analysis     = EvolvingItems.analyzeChain(this.rows, this.items, this.rows.concat(this.ownRows))
       } catch (e) {
         this.error = (e.response && e.response.data && e.response.data.error) || e.message
       }
@@ -190,6 +215,28 @@ export default {
 
 .evo-type {
   min-width: 110px !important;
+}
+
+.evo-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.evo-zone-pill {
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.evo-zone-pill.is-missing {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 input[type=number] {

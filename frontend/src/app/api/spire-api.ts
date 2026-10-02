@@ -2,6 +2,7 @@ import axios from "axios";
 import UserContext from "@/app/user/UserContext";
 import Debug from "@/app/debug/debug";
 import {ROUTE} from "@/routes";
+import {createDemoAdapter, isDemoMode} from "@/app/demo-mode";
 
 
 const PUBLIC_SPIRE = "https://spire.eqemu.dev/api/v1";
@@ -26,7 +27,15 @@ export class SpireApi {
 
   static getAxiosConfig() {
     let spireAxiosConfig = <any>{
-      baseURL: this.getBaseV1Path()
+      baseURL: this.getBaseV1Path(),
+      // Generated OpenAPI clients pass an already-absolute URL
+      // (basePath + path). Keep that as the request URL.
+      allowAbsoluteUrls: true,
+      // Spire authenticates with a Bearer JWT, not cookie CSRF. Blank these so
+      // axios cannot attach an XSRF-TOKEN cookie to a request (CVE-2023-45857).
+      xsrfCookieName: "",
+      xsrfHeaderName: "",
+      withXSRFToken: false,
     }
 
     if (UserContext.getAccessToken() !== "") {
@@ -63,6 +72,9 @@ export class SpireApi {
   static newAxiosWithConfig() {
     // @ts-ignore
     let client = axios.create(this.getAxiosConfig())
+    if (isDemoMode()) {
+      client.defaults.adapter = createDemoAdapter()
+    }
 
     client.interceptors.request.use(x => {
       // @ts-ignore

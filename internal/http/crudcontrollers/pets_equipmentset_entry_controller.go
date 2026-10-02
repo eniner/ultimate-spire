@@ -186,6 +186,7 @@ func (e *PetsEquipmentsetEntryController) updatePetsEquipmentsetEntry(c echo.Con
 
 	// save top-level using only changes
 	diff := database.ResultDifference(result, request)
+	diff = database.LimitDiffToJSON(c, request, diff)
 	err = query.Session(&gorm.Session{FullSaveAssociations: false}).Updates(diff).Error
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": fmt.Sprintf("Error updating entity [%v]", err.Error())})

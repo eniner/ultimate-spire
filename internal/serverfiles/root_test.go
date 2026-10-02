@@ -68,15 +68,58 @@ func TestLocalListAndWrite(t *testing.T) {
 	if err != nil || !strings.Contains(body, "EVENT_SAY") {
 		t.Fatalf("read failed %q %v", body, err)
 	}
-	if err := s.writeLocal(root, "cazicthule/player.pl", "sub EVENT_SPAWN {}\n", false); err != nil {
+	if err := s.writeLocal(root, "cazicthule/player.pl", "sub EVENT_SPAWN {}\n", "", false); err != nil {
 		t.Fatal(err)
 	}
 	body, err = s.readLocal(root, "cazicthule/player.pl")
 	if err != nil || !strings.Contains(body, "EVENT_SPAWN") {
 		t.Fatalf("write did not persist %q %v", body, err)
 	}
-	if err := s.writeLocal(root, "cazicthule/new.lua", "function event_say() end\n", true); err != nil {
+	if err := s.writeLocal(root, "cazicthule/new.lua", "function event_say() end\n", "", true); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestParseHTTPRootBlocksInternal(t *testing.T) {
+	if _, err := parseHTTPRoot("http://127.0.0.1/"); err == nil {
+		t.Fatal("expected loopback blocked")
+	}
+	if _, err := parseHTTPRoot("http://user:pass@example.com/"); err == nil {
+		t.Fatal("expected userinfo blocked")
+	}
+	if _, err := parseHTTPRoot("ftp://files.example.com/"); err == nil {
+		t.Fatal("expected scheme blocked")
+	}
+}
+
+func TestWriteLocalRejectsStaleHash(t *testing.T) {
+	root := t.TempDir()
+	s := &Service{}
+	if err := os.WriteFile(filepath.Join(root, "player.pl"), []byte("old"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.writeLocal(root, "player.pl", "new\n", fileHash("not-old"), false); err == nil {
+		t.Fatal("expected stale hash")
+	}
+	if err := s.writeLocal(root, "player.pl", "new\n", fileHash("old"), false); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestResolveAbsRejectsSymlinkEscape(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	secret := filepath.Join(outside, "secret.pl")
+	if err := os.WriteFile(secret, []byte("nope"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(root, "escape.pl")
+	if err := os.Symlink(secret, link); err != nil {
+		t.Skip("symlink not permitted")
+	}
+	s := &Service{}
+	if _, err := s.resolveAbs(root, "escape.pl"); err == nil {
+		t.Fatal("expected symlink escape to fail")
 	}
 }
 

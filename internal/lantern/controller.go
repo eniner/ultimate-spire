@@ -22,6 +22,8 @@ func (e *Controller) Routes() []*routes.Route {
 		routes.RegisterRoute(http.MethodGet, "zone-editor/lantern/zones", e.zones, nil),
 		routes.RegisterRoute(http.MethodGet, "zone-editor/lantern/zones/:zone", e.zone, nil),
 		routes.RegisterRoute(http.MethodGet, "zone-editor/lantern/zones/:zone/instances", e.instances, nil),
+		routes.RegisterRoute(http.MethodPut, "zone-editor/lantern/zones/:zone/instances", e.saveInstances, nil),
+		routes.RegisterRoute(http.MethodGet, "zone-editor/lantern/zones/:zone/models", e.models, nil),
 		routes.RegisterRoute(http.MethodGet, "zone-editor/lantern/file", e.file, nil),
 	}
 }
@@ -113,6 +115,66 @@ func (e *Controller) instances(c echo.Context) error {
 		"zone":      zone,
 		"count":     len(instances),
 		"instances": instances,
+	})
+}
+
+type saveInstancesRequest struct {
+	Instances []ObjectInstance `json:"instances"`
+}
+
+func (e *Controller) saveInstances(c echo.Context) error {
+	root, err := resolveRoot()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+	zone, err := sanitizeZone(c.Param("zone"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+	req := new(saveInstancesRequest)
+	if err := c.Bind(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if req.Instances == nil {
+		req.Instances = []ObjectInstance{}
+	}
+	if err := writeObjectInstances(root, zone, req.Instances); err != nil {
+		status := http.StatusBadRequest
+		if strings.Contains(err.Error(), "outside") {
+			status = http.StatusBadRequest
+		}
+		return c.JSON(status, echo.Map{"error": err.Error()})
+	}
+	written, err := parseObjectInstances(root, zone)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"ok":        true,
+		"zone":      zone,
+		"count":     len(written),
+		"instances": written,
+	})
+}
+
+func (e *Controller) models(c echo.Context) error {
+	root, err := resolveRoot()
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+	zone, err := sanitizeZone(c.Param("zone"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
+	}
+	models, err := listObjectModels(root, zone)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"ok":     true,
+		"zone":   zone,
+		"count":  len(models),
+		"models": models,
 	})
 }
 

@@ -33,19 +33,12 @@ func (r ReadOnlyMiddleware) Handle() echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			// if it is a get request, we should be able to read it
-			ignoredPostRoutes := []string{
-				"/api/v1/connection",
-				"/bulk",
-			}
-
-			if strings.Contains(c.Request().URL.Path, "/api/v1/connection") {
-				return next(c)
-			}
-
-			// allow get calls
-			// allow post calls that are ignored
-			if c.Request().Method == "GET" || (c.Request().Method == "POST" && !contains(ignoredPostRoutes, c.Request().URL.Path)) {
+			path := c.Request().URL.Path
+			method := c.Request().Method
+			isRead := method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions
+			isBulkFetch := method == http.MethodPost && strings.Contains(path, "/bulk")
+			isConnection := strings.Contains(path, "/api/v1/connection")
+			if isRead || isBulkFetch || isConnection {
 				return next(c)
 			}
 
@@ -90,14 +83,4 @@ func (r ReadOnlyMiddleware) Handle() echo.MiddlewareFunc {
 			return next(c)
 		}
 	}
-}
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
 }

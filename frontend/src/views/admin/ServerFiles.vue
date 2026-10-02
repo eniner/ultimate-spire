@@ -181,6 +181,7 @@ export default {
       openFile: "",
       fileContent: "",
       savedContent: "",
+      fileHash: "",
       themeTick: 0,
     }
   },
@@ -350,6 +351,7 @@ export default {
         this.openFile = r.path
         this.fileContent = r.content || ""
         this.savedContent = this.fileContent
+        this.fileHash = r.hash || ""
       } catch (e) {
         this.error = this.readError(e, "Could not open file.")
       }
@@ -360,8 +362,9 @@ export default {
       }
       this.saving = true
       try {
-        await ServerFilesApi.save(this.openFile, this.fileContent)
+        const r = await ServerFilesApi.save(this.openFile, this.fileContent, this.fileHash)
         this.savedContent = this.fileContent
+        this.fileHash = (r && r.hash) || this.fileHash
         this.notification = `Saved ${this.openFile}`
       } catch (e) {
         this.error = this.readError(e, "Could not save file.")
@@ -379,6 +382,7 @@ export default {
       this.openFile = ""
       this.fileContent = ""
       this.savedContent = ""
+      this.fileHash = ""
     },
     async createFile() {
       const name = String(this.newName || "").replace(/\\/g, "/").split("/").pop()

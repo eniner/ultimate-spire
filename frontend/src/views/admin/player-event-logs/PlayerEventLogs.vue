@@ -320,7 +320,7 @@ import {PlayerEventLogSettingApi}  from "@/app/api/api/player-event-log-setting-
 import Timer                       from "@/app/timer/timer";
 import EqProgressBar               from "@/components/eq-ui/EQProgressBar.vue";
 import LoaderFakeProgress          from "@/components/LoaderFakeProgress.vue";
-import hljs                        from "highlight.js/lib/highlight";
+import hljs                        from "@/app/hljs";
 import {Navbar}                    from "@/app/navbar";
 import {Characters}                from "@/app/characters";
 import util                        from "util";
@@ -564,7 +564,7 @@ export default {
       setTimeout(() => {
         // hljs.initHighlighting()
         for (let b of document.querySelectorAll('pre code')) {
-          hljs.highlightBlock(b)
+          hljs.highlightElement(b)
         }
       }, 10)
     },

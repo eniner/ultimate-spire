@@ -1,233 +1,76 @@
 <template>
-  <div class="container-fluid">
-
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-10 col-xl-10 card">
-        <div class="container-fluid mb-5">
-
-          <!-- Race Bitmask Calculator -->
-          <header-component
-            header="Race Bitmask Calculator"
-            sub-header="Computes the bitmask for selected races..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-                <race-bitmask-calculator
-                  :inputData.sync="racesBitmask"
-                  :mask="racesBitmask"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Race Bitmask</h4>
-
-                    The input is two-way bound with the race selector
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="racesBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- Class Bitmask Calculator -->
-          <header-component
-            header="Class Bitmask Calculator"
-            sub-header="Computes the bitmask for selected classes..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-                <class-bitmask-calculator
-                  :inputData.sync="classesBitmask"
-                  :mask="classesBitmask"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Class Bitmask</h4>
-                    The input is two-way bound with the class selector
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="classesBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- Deity Bitmask Calculator -->
-          <header-component
-            header="Deity Bitmask Calculator"
-            sub-header="Computes the bitmask for selected deities..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-                <deity-bitmask-calculator
-                  :inputData.sync="deityBitmask"
-                  :mask="deityBitmask"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Deity Bitmask</h4>
-                    The input is two-way bound with the deity selector
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="deityBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- Client Version Calculator -->
-          <header-component
-            header="Client Version Calculator"
-            sub-header="Computes the bitmask for selected client versions..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-                <client-version-calculator
-                  :inputData.sync="clientVersionBitmask"
-                  :mask="clientVersionBitmask"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Client Version Bitmask</h4>
-                    The input is two-way bound with the client version selector
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="clientVersionBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- Expansions Bitmask Calculator -->
-          <header-component
-            header="Expansions Bitmask Calculator"
-            sub-header="Computes the bitmask for selected expansions..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-                <expansion-bitmask-calculator
-                  :inputData.sync="expansionBitmask"
-                  :mask="expansionBitmask"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Expansion Bitmask</h4>
-                    The input is two-way bound with the expansion selector
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="expansionBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- Augment Type Bitmask Calculator -->
-          <header-component
-            header="Augment Type Calculator"
-            sub-header="Computes the bitmask for selected augments..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-                <aug-bitmask-calculator
-                  :inputData.sync="augBitmask"
-                  :mask="augBitmask"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Aug Bitmask</h4>
-                    The input is two-way bound with the aug selector
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="augBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- Inventory Slot Calculator -->
-          <header-component
-            header="Inventory Slot Calculator"
-            sub-header="Computes outputs based on inputs..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 500px">
-
-                <inventory-slot-calculator
-                  :inputData.sync="inventorySlotBitmask"
-                  :mask="inventorySlotBitmask"
-                />
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Inventory Slot Bitmask</h4>
-                    The input is two-way bound with above
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="inventorySlotBitmask">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-
-          <!-- NPC Special Abilities -->
-          <header-component
-            header="NPC Special Abilities"
-            sub-header="Computes NPC Special abilities..."
-          />
-
-          <div class="row">
-            <div class="col-12 p-0">
-              <eq-window style="width: 100%">
-
-                <npc-special-abilities
-                  :inputData.sync="specialAbilityInput"
-                  :abilities="specialAbilityInput"/>
-
-                <div class="row">
-                  <div class="col-12 p-0">
-                    <h4 class="eq-header mt-2">Special Abilities Code</h4>
-                    The input is two-way bound with above
-                    <input
-                      type="text"
-                      class="form-control mb-3 mt-3"
-                      v-model="specialAbilityInput">
-                  </div>
-                </div>
-              </eq-window>
-            </div>
-          </div>
-        </div>
-
+  <div>
+    <eq-window title="Calculators">
+      <div class="ui-stat-line">
+        Each tool is its own window. Click a bitmask or type a number — both stay in sync.
       </div>
+    </eq-window>
+
+    <div class="page-grid">
+      <eq-window id="race-bitmask-calculator" title="Race Bitmask">
+        <race-bitmask-calculator :inputData.sync="racesBitmask" :mask="racesBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="race-bitmask-value">Bitmask</label>
+          <input id="race-bitmask-value" type="text" class="form-control form-control-sm" v-model="racesBitmask">
+        </div>
+      </eq-window>
+
+      <eq-window id="class-bitmask-calculator" title="Class Bitmask">
+        <class-bitmask-calculator :inputData.sync="classesBitmask" :mask="classesBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="class-bitmask-value">Bitmask</label>
+          <input id="class-bitmask-value" type="text" class="form-control form-control-sm" v-model="classesBitmask">
+        </div>
+      </eq-window>
+
+      <eq-window id="deity-bitmask-calculator" title="Deity Bitmask">
+        <deity-bitmask-calculator :inputData.sync="deityBitmask" :mask="deityBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="deity-bitmask-value">Bitmask</label>
+          <input id="deity-bitmask-value" type="text" class="form-control form-control-sm" v-model="deityBitmask">
+        </div>
+      </eq-window>
+
+      <eq-window id="client-version-calculator" title="Client Version Bitmask">
+        <client-version-calculator :inputData.sync="clientVersionBitmask" :mask="clientVersionBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="client-version-value">Bitmask</label>
+          <input id="client-version-value" type="text" class="form-control form-control-sm" v-model="clientVersionBitmask">
+        </div>
+      </eq-window>
+
+      <eq-window id="expansions-bitmask-calculator" title="Expansion Bitmask">
+        <expansion-bitmask-calculator :inputData.sync="expansionBitmask" :mask="expansionBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="expansion-bitmask-value">Bitmask</label>
+          <input id="expansion-bitmask-value" type="text" class="form-control form-control-sm" v-model="expansionBitmask">
+        </div>
+      </eq-window>
+
+      <eq-window id="augment-type-calculator" title="Augment Type Bitmask">
+        <aug-bitmask-calculator :inputData.sync="augBitmask" :mask="augBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="aug-bitmask-value">Bitmask</label>
+          <input id="aug-bitmask-value" type="text" class="form-control form-control-sm" v-model="augBitmask">
+        </div>
+      </eq-window>
+
+      <eq-window id="inventory-slot-calculator" title="Inventory Slot Bitmask">
+        <inventory-slot-calculator :inputData.sync="inventorySlotBitmask" :mask="inventorySlotBitmask"/>
+        <div class="ui-field mt-3">
+          <label for="inventory-slot-value">Bitmask</label>
+          <input id="inventory-slot-value" type="text" class="form-control form-control-sm" v-model="inventorySlotBitmask">
+        </div>
+      </eq-window>
     </div>
+
+    <eq-window id="npc-special-abilities" title="NPC Special Abilities" class="page-grid-wide">
+      <npc-special-abilities :inputData.sync="specialAbilityInput" :abilities="specialAbilityInput"/>
+      <div class="ui-field mt-3">
+        <label for="special-ability-value">Special abilities code</label>
+        <input id="special-ability-value" type="text" class="form-control form-control-sm" v-model="specialAbilityInput">
+      </div>
+    </eq-window>
   </div>
 </template>
 

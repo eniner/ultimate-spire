@@ -187,6 +187,8 @@ export default {
       try {
         this.status = await WebsiteApi.status()
         await this.loadUsers()
+        await this.loadAccounts()
+        await this.loadCharacters()
         await this.loadLinks()
         await this.loadCharLinks()
       } catch (e) {

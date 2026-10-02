@@ -8,7 +8,7 @@ export type PlacementCoords = {
 }
 
 export type Spawn2PlacementChange = PlacementCoords & {
-  table: "spawn2"
+  table: "spawn2" | "object"
   id: number
 }
 

@@ -1,19 +1,12 @@
 <template>
   <div class="row justify-content-center" v-if="connections">
-    <div class="col-12 col-lg-10 col-xl-8 content-pop card">
-      <!-- CONTENT -->
+    <div class="col-12 col-lg-10 col-xl-8">
+      <eq-window title="Database connections">
+        <p class="ui-stat-line mb-0">
+          One primary connection at a time. Default ProjectEQ is read-only when you are not logged in.
+        </p>
+      </eq-window>
       <div class="container-fluid">
-
-        <div class="row justify-content-between align-items-center mt-5">
-          <div class="col-12">
-            <h2 class="mb-2">
-              Database Connection Properties
-            </h2>
-            <p class="text-muted mb-md-0">
-              Manage your database connections, you can only have one active primary connection at a time
-            </p>
-          </div>
-        </div>
 
         <b-tabs class="mt-4" content-class="mt-5" fill v-if="connections">
           <b-tab

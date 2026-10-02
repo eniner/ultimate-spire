@@ -44,4 +44,15 @@ func TestValidateSaveRequest(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 	})
+
+	t.Run("accepts object", func(t *testing.T) {
+		err := validateSaveRequest(&SavePlacementsRequest{
+			Zone:    "poknowledge",
+			Version: 0,
+			Changes: []PlacementChange{{Table: "object", ID: 3, X: &x}},
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
 }

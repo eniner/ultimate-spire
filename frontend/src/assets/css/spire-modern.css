@@ -24,15 +24,15 @@ html.spire-modern {
 
 html.spire-modern[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #0f1216;
-  --surface: #161a20;
-  --surface-2: #1c2129;
-  --surface-3: #252b35;
-  --sidebar-bg: #12161b;
-  --input-bg: #11151a;
-  --border: #272e38;
-  --border-subtle: #1f252e;
-  --border-strong: #37404d;
+  --bg: #0c0e12;
+  --surface: #1a1f28;
+  --surface-2: #232a35;
+  --surface-3: #2c3440;
+  --sidebar-bg: #10141a;
+  --input-bg: #12161c;
+  --border: #3a4350;
+  --border-subtle: #2a313c;
+  --border-strong: #526070;
   --text: #e7eaef;
   --text-muted: #a3adbb;
   --text-subtle: #75808f;
@@ -226,15 +226,25 @@ html.spire-modern .eq-window-hybrid,
 html.spire-modern .WindowComplexGM {
   background: var(--surface) !important;
   background-image: none !important;
-  border: 1px solid var(--border) !important;
+  border: 1px solid var(--border-strong) !important;
   border-radius: var(--radius) !important;
-  box-shadow: var(--shadow) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 10px 28px rgba(0, 0, 0, 0.28) !important;
   color: var(--text) !important;
   padding: var(--space-5);
   margin-top: var(--space-4);
   margin-bottom: var(--space-4);
   opacity: 1 !important;
   font-size: 13px;
+}
+
+html.spire-modern[data-theme="light"] .eq-window,
+html.spire-modern[data-theme="light"] .eq-window-simple,
+html.spire-modern[data-theme="light"] .eq-window-fancy,
+html.spire-modern[data-theme="light"] .eq-window-complex,
+html.spire-modern[data-theme="light"] .eq-window-complex-fancy,
+html.spire-modern[data-theme="light"] .eq-window-hybrid,
+html.spire-modern[data-theme="light"] .WindowComplexGM {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 10px 24px rgba(16, 24, 40, 0.08) !important;
 }
 
 html.spire-modern .eq-window:before,
@@ -255,13 +265,16 @@ html.spire-modern .eq-window > .eq-window-title-bar {
   width: auto !important;
   height: auto !important;
   margin: 0 0 var(--space-4) !important;
-  padding: 0 0 var(--space-3) !important;
-  background: none !important;
+  padding: 8px 12px 8px 14px !important;
+  background: var(--surface-2) !important;
   background-image: none !important;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border) !important;
+  border-left: 3px solid var(--accent) !important;
+  border-radius: var(--radius-sm);
   color: var(--text) !important;
-  font-size: 15px !important;
+  font-size: 13px !important;
   font-weight: 600;
+  letter-spacing: 0.01em;
   line-height: 1.3 !important;
   text-align: left !important;
   text-shadow: none !important;
@@ -1207,17 +1220,20 @@ html.spire-modern .privacy-bar {
 }
 
 html.spire-modern .ui-section {
-  padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: var(--space-3) var(--space-4);
+  margin: 0 0 var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 html.spire-modern .ui-section:first-child {
-  padding-top: 0;
+  padding-top: var(--space-3);
 }
 
 html.spire-modern .ui-section:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-3);
 }
 
 html.spire-modern .ui-section-head {
@@ -1287,5 +1303,242 @@ html.spire-modern .ui-stat-line b {
 
 html.spire-modern .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- toolbars / field blocks */
+
+html.spire-modern .ui-toolbar,
+html.spire-modern .task-toolbar,
+html.spire-modern .evo-toolbar,
+html.spire-modern .char-inv-toolbar,
+html.spire-modern .item-search-row,
+html.spire-modern .zone-editor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  padding: 10px 12px;
+  margin-bottom: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+html.spire-modern .ui-toolbar .form-control,
+html.spire-modern .task-toolbar .form-control,
+html.spire-modern .evo-toolbar .form-control,
+html.spire-modern .char-inv-toolbar .form-control {
+  min-width: 160px;
+}
+
+html.spire-modern .ui-field,
+html.spire-modern .item-field,
+html.spire-modern .form-group {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+
+html.spire-modern .ui-field label,
+html.spire-modern .item-field label,
+html.spire-modern .form-group label,
+html.spire-modern [class*="eq-window"] label.small,
+html.spire-modern [class*="eq-window"] .form-group > label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+html.spire-modern .ui-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+html.spire-modern .ui-field-grid .form-group {
+  margin-bottom: 0;
+}
+
+html.spire-modern .item-edit-card .row > [class*="col-"],
+html.spire-modern .spell-edit-card .row > [class*="col-"],
+html.spire-modern #task-edit-window .row > [class*="col-"],
+html.spire-modern #item-edit-card .row > [class*="col-"],
+html.spire-modern #spell-edit-card .row > [class*="col-"] {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px !important;
+  margin-bottom: 8px;
+}
+
+html.spire-modern .item-edit-card .row > [class*="col-"] > input,
+html.spire-modern .spell-edit-card .row > [class*="col-"] > input,
+html.spire-modern #task-edit-window .row > [class*="col-"] > input,
+html.spire-modern .item-edit-card .row > [class*="col-"] > select,
+html.spire-modern .spell-edit-card .row > [class*="col-"] > select,
+html.spire-modern #task-edit-window .row > [class*="col-"] > select,
+html.spire-modern .item-edit-card .row > [class*="col-"] > textarea,
+html.spire-modern .spell-edit-card .row > [class*="col-"] > textarea,
+html.spire-modern #task-edit-window .row > [class*="col-"] > textarea {
+  margin-top: 4px;
+}
+
+/* ---------------------------------------------------------------- page headers / docs / changelog */
+
+html.spire-modern .header-title,
+html.spire-modern .header-body .header-title {
+  display: block;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 15px !important;
+  font-weight: 600;
+}
+
+html.spire-modern .header-subtitle,
+html.spire-modern .header-body .header-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin: 0 0 16px;
+  padding: 0 4px;
+}
+
+html.spire-modern .changelog,
+html.spire-modern .markdown-body,
+html.spire-modern .doc {
+  max-width: 920px;
+}
+
+html.spire-modern .changelog h1,
+html.spire-modern .markdown-body h1,
+html.spire-modern .doc h1,
+html.spire-modern .changelog h2,
+html.spire-modern .markdown-body h2,
+html.spire-modern .doc h2 {
+  margin: 28px 0 12px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: 16px !important;
+  font-weight: 600;
+}
+
+html.spire-modern .changelog h3,
+html.spire-modern .markdown-body h3,
+html.spire-modern .doc h3,
+html.spire-modern .changelog h4,
+html.spire-modern .markdown-body h4,
+html.spire-modern .doc h4 {
+  margin: 20px 0 8px;
+  padding: 6px 0 6px 10px;
+  border-left: 2px solid var(--border-strong);
+  font-size: 14px !important;
+  color: var(--text);
+}
+
+html.spire-modern .changelog p,
+html.spire-modern .markdown-body p,
+html.spire-modern .doc p {
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+html.spire-modern .changelog ul,
+html.spire-modern .markdown-body ul,
+html.spire-modern .doc ul,
+html.spire-modern .changelog ol,
+html.spire-modern .markdown-body ol,
+html.spire-modern .doc ol {
+  margin: 0 0 16px;
+  padding: 12px 14px 12px 32px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+html.spire-modern .changelog li,
+html.spire-modern .markdown-body li,
+html.spire-modern .doc li {
+  margin: 4px 0;
+}
+
+html.spire-modern .changelog img,
+html.spire-modern .markdown-body img,
+html.spire-modern .doc img {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+html.spire-modern .doc pre,
+html.spire-modern .markdown-body pre,
+html.spire-modern .changelog pre {
+  margin-bottom: 16px;
+}
+
+/* ---------------------------------------------------------------- code / API list rows */
+
+html.spire-modern .ui-code-row,
+html.spire-modern .code-display > div > div {
+  padding: 8px 10px;
+  margin: 0 0 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+html.spire-modern .ui-code-row:hover,
+html.spire-modern .code-display > div > div:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
+}
+
+html.spire-modern .ui-code-row.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+html.spire-modern .page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+html.spire-modern .page-grid > [class*="eq-window"] {
+  width: 100% !important;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+html.spire-modern .page-grid-wide {
+  grid-column: 1 / -1;
+}
+
+html.spire-modern .eq-table TBODY TR.is-selected,
+html.spire-modern .eq-table TBODY TR.peq-row-selected,
+html.spire-modern .task-row.is-selected {
+  background: var(--accent-soft) !important;
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+html.spire-modern .peq-hub-card {
+  background: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+}
+
+html.spire-modern .peq-hub-card:hover {
+  border-color: var(--accent) !important;
+  background: var(--surface-3) !important;
 }
 

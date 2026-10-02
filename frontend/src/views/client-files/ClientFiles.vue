@@ -1,45 +1,27 @@
 <template>
-  <content-area class="text-center" style="padding: 0 !important">
-    <eq-window-simple
-      title="Client File Drop Zone"
-      style="height: 95vh"
-      class="mt-3 p-0"
-    >
-      <div
-        class="mb-3"
-        style="font-size: 16px"
-      >
-
-        <!-- Success -->
-        <div
-          class="mt-3 eq-header fade-in"
-          v-if="successMessage"
-          style="font-size: 36px"
-        >
-          {{ successMessage }}
-        </div>
-        <div class="mt-3 fade-in" v-if="loading">
-          <loader-fake-progress/>
-        </div>
+  <content-area style="padding: 0 !important">
+    <eq-window title="Export client files">
+      <div class="ui-toolbar">
+        <div class="ui-stat-line mr-auto">Download the current database as client files.</div>
+        <b-button @click="downloadSpells" size="sm" variant="primary">
+          <i class="fa fa-cloud-download"></i>
+          spells_us.txt
+        </b-button>
+        <b-button @click="downloadDbStr" size="sm" variant="primary">
+          <i class="fa fa-cloud-download"></i>
+          dbstr_us.txt
+        </b-button>
       </div>
+      <div class="ui-stat-line" v-if="successMessage">{{ successMessage }}</div>
+      <loader-fake-progress v-if="loading" class="mt-2"/>
+    </eq-window>
 
-      <!-- Buttons -->
-      <div class="row">
-        <div class="col-12">
-          <b-button @click="downloadSpells" size="sm" variant="warning">
-            <i class="fa fa-cloud-download"></i>
-            Spells (spells_us.txt)
-          </b-button>
-          <b-button @click="downloadDbStr" size="sm" variant="warning" class="ml-3">
-            <i class="fa fa-cloud-download"></i> DB Strings (dbstr_us.txt)
-          </b-button>
-        </div>
+    <eq-window title="Import client files">
+      <div class="ui-problem mb-3">
+        Dropped files overwrite matching database values immediately.
       </div>
-
-      <!-- Dropzone -->
       <vue-dropzone
-        class="mt-4"
-        style="height: 70vh"
+        style="min-height: 360px"
         v-on:vdropzone-success="success"
         v-on:vdropzone-queue-complete="queueComplete"
         v-on:vdropzone-processing="processing"
@@ -47,14 +29,7 @@
         id="dropzone"
         :options="dropzoneOptions"
       />
-
-      <div class="mt-4" style="color: red">
-        <b>WARNING</b> Files will immediately overwrite all database values
-      </div>
-
-
-    </eq-window-simple>
-
+    </eq-window>
   </content-area>
 </template>
 

@@ -159,27 +159,7 @@ func (e *Controller) listRows(c echo.Context) error {
 	}
 	offset := (page - 1) * limit
 	search := strings.TrimSpace(c.QueryParam("search"))
-	whereSQL := ""
-	args := []interface{}{}
-	if search != "" {
-		parts := []string{}
-		for _, col := range cols {
-			qcol, err := quoteIdent(col.Name)
-			if err != nil {
-				continue
-			}
-			if strings.Contains(col.Type, "char") || strings.Contains(col.Type, "text") {
-				parts = append(parts, qcol+" LIKE ?")
-				args = append(args, "%"+search+"%")
-			} else if _, err := strconv.Atoi(search); err == nil && (col.Key == "PRI" || strings.Contains(col.Type, "int")) {
-				parts = append(parts, qcol+" = ?")
-				args = append(args, search)
-			}
-		}
-		if len(parts) > 0 {
-			whereSQL = " WHERE " + strings.Join(parts, " OR ")
-		}
-	}
+	whereSQL, args := searchWhere(cols, search)
 	sql := fmt.Sprintf("SELECT * FROM %s%s LIMIT ? OFFSET ?", qTable, whereSQL)
 	args = append(args, limit, offset)
 	db := e.db.Get(models.CharacterDatum{}, c)
@@ -211,16 +191,46 @@ func (e *Controller) countRows(c echo.Context) error {
 	if !allowedTable(table) {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "table is not allowed"})
 	}
+	cols, err := e.columns(c, table)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
 	qTable, err := quoteIdent(table)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
 	}
+	whereSQL, args := searchWhere(cols, strings.TrimSpace(c.QueryParam("search")))
 	db := e.db.Get(models.CharacterDatum{}, c)
 	var count int64
-	if err := db.Raw("SELECT COUNT(*) FROM " + qTable).Scan(&count).Error; err != nil {
+	if err := db.Raw("SELECT COUNT(*) FROM "+qTable+whereSQL, args...).Scan(&count).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"count": count})
+}
+
+func searchWhere(cols []columnInfo, search string) (string, []interface{}) {
+	if search == "" {
+		return "", nil
+	}
+	var parts []string
+	var args []interface{}
+	for _, col := range cols {
+		qcol, err := quoteIdent(col.Name)
+		if err != nil {
+			continue
+		}
+		if strings.Contains(col.Type, "char") || strings.Contains(col.Type, "text") {
+			parts = append(parts, qcol+" LIKE ?")
+			args = append(args, "%"+search+"%")
+		} else if _, err := strconv.Atoi(search); err == nil && (col.Key == "PRI" || strings.Contains(col.Type, "int")) {
+			parts = append(parts, qcol+" = ?")
+			args = append(args, search)
+		}
+	}
+	if len(parts) == 0 {
+		return "", nil
+	}
+	return " WHERE " + strings.Join(parts, " OR "), args
 }
 
 func (e *Controller) createRow(c echo.Context) error {
@@ -299,15 +309,11 @@ func (e *Controller) mutateRow(c echo.Context, del bool) error {
 	}
 	var where []string
 	var args []interface{}
+	var pkParts []string
 	for _, pk := range pks {
 		val := c.QueryParam(pk)
 		if val == "" {
-			if bodyVal, ok := body[pk]; ok {
-				val = fmt.Sprintf("%v", bodyVal)
-			}
-		}
-		if val == "" {
-			return c.JSON(http.StatusBadRequest, echo.Map{"error": "missing primary key " + pk})
+			return c.JSON(http.StatusBadRequest, echo.Map{"error": "missing original primary key " + pk})
 		}
 		qcol, err := quoteIdent(pk)
 		if err != nil {
@@ -315,15 +321,20 @@ func (e *Controller) mutateRow(c echo.Context, del bool) error {
 		}
 		where = append(where, qcol+" = ?")
 		args = append(args, val)
+		pkParts = append(pkParts, pk+"="+val)
 	}
 	db := e.db.Get(models.CharacterDatum{}, c)
 	if del {
 		sql := fmt.Sprintf("DELETE FROM %s WHERE %s", qTable, strings.Join(where, " AND "))
-		if err := db.Exec(sql, args...).Error; err != nil {
-			return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+		res := db.Exec(sql, args...)
+		if res.Error != nil {
+			return c.JSON(http.StatusInternalServerError, echo.Map{"error": res.Error.Error()})
+		}
+		if res.RowsAffected != 1 {
+			return c.JSON(http.StatusConflict, echo.Map{"error": fmt.Sprintf("delete matched %d rows, expected 1", res.RowsAffected)})
 		}
 		if e.db.GetSpireDb() != nil {
-			e.auditLog.LogUserEvent(c, "DELETE", fmt.Sprintf("Deleted peq-raw [%s]", table))
+			e.auditLog.LogUserEvent(c, "DELETE", fmt.Sprintf("Deleted peq-raw [%s] %s", table, strings.Join(pkParts, ",")))
 		}
 		return c.JSON(http.StatusOK, echo.Map{"ok": true})
 	}
@@ -352,11 +363,15 @@ func (e *Controller) mutateRow(c echo.Context, del bool) error {
 	}
 	sql := fmt.Sprintf("UPDATE %s SET %s WHERE %s", qTable, strings.Join(sets, ","), strings.Join(where, " AND "))
 	setArgs = append(setArgs, args...)
-	if err := db.Exec(sql, setArgs...).Error; err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	res := db.Exec(sql, setArgs...)
+	if res.Error != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": res.Error.Error()})
+	}
+	if res.RowsAffected != 1 {
+		return c.JSON(http.StatusConflict, echo.Map{"error": fmt.Sprintf("update matched %d rows, expected 1", res.RowsAffected)})
 	}
 	if e.db.GetSpireDb() != nil {
-		e.auditLog.LogUserEvent(c, "UPDATE", fmt.Sprintf("Updated peq-raw [%s]", table))
+		e.auditLog.LogUserEvent(c, "UPDATE", fmt.Sprintf("Updated peq-raw [%s] %s", table, strings.Join(pkParts, ",")))
 	}
 	return c.JSON(http.StatusOK, echo.Map{"ok": true})
 }

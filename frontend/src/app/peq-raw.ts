@@ -20,8 +20,10 @@ export class PeqRawApi {
     return r.data || {}
   }
 
-  static async count(table: string): Promise<number> {
-    const r = await SpireApi.v1().get("/peq-raw/" + encodeURIComponent(table) + "/count")
+  static async count(table: string, search = ""): Promise<number> {
+    const r = await SpireApi.v1().get("/peq-raw/" + encodeURIComponent(table) + "/count", {
+      params: { search },
+    })
     const body = r.data
     if (typeof body === "number") {
       return body

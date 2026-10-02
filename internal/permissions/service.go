@@ -82,6 +82,7 @@ func (s *Service) RegisterManualResources() map[string][]string {
 		"Server Player Event ETL Settings": {"eqemuserver/player-event-logs/etl-settings"},
 		"Zone Editor":    {"zone-editor"},
 		"PEQ Raw Tables": {"peq-raw"},
+		"Server Files":   {"admin/server-files", "admin/zone-controller", "admin/ultimate-systems"},
 	}
 }
 
@@ -301,14 +302,19 @@ type userPermissions struct {
 }
 
 func (s *Service) IsWriteRequest(c echo.Context) bool {
-	return contains(
-		[]string{
-			http.MethodPatch,
-			http.MethodPost,
-			http.MethodPut,
-		},
-		c.Request().Method,
-	) && !strings.Contains(c.Request().URL.Path, "/bulk")
+	method := c.Request().Method
+	path := c.Request().URL.Path
+	switch method {
+	case http.MethodDelete:
+		return true
+	case http.MethodPatch, http.MethodPut:
+		return true
+	case http.MethodPost:
+		// generated /bulk routes are ID fetches, not mutations
+		return !strings.Contains(path, "/bulk")
+	default:
+		return false
+	}
 }
 
 func (s *Service) CanAccessResource(c echo.Context, user models.User, connectionId uint) bool {

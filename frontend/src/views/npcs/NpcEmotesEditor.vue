@@ -7,52 +7,48 @@
           class="p-0"
         >
 
-          <div class="row minified-inputs mt-4 text-center">
-            <div class="col-3 p-0 text-right">
-              <div class="d-inline-block btn-group ml-4 text-right" role="group" style="margin-top: 26px">
-                <b-button
-                  size="sm"
-                  variant="outline-warning"
-                  @click="reset(); rows = []; loading = true; updateQueryState(); init()"
-                >
-                  <i class="fa fa-refresh mr-1"></i>
-                  Reset
-                </b-button>
-                <b-button
-                  size="sm"
-                  variant="outline-warning"
-                  @click="newEmote()"
-                >
-                  <i class="fa fa-plus mr-1"></i>
-                  New
-                </b-button>
-              </div>
-            </div>
-            <div class="col-2">
-              Event
+          <div class="ui-toolbar">
+            <div class="ui-field" style="flex: 1 1 160px; margin-bottom: 0">
+              <label>Event</label>
               <b-form-select
                 v-model="eventSelection"
                 @change="subSelectedId = -1; rows = []; updateQueryState()"
                 :options="NPC_EMOTE_EVENTS"
               />
             </div>
-            <div class="col-2">
-              Type
+            <div class="ui-field" style="flex: 1 1 160px; margin-bottom: 0">
+              <label>Type</label>
               <b-form-select
                 v-model="typeSelection"
                 @change="subSelectedId = -1; rows = []; updateQueryState()"
                 :options="NPC_EMOTE_TYPES"
               />
             </div>
-            <div class="col-2">
-              Search
+            <div class="ui-field" style="flex: 2 1 220px; margin-bottom: 0">
+              <label>Search</label>
               <b-form-input
                 v-model="search"
                 v-on:keyup="subSelectedId = -1; rows = []; loading = true; updateQueryStateDebounce()"
-                placeholder="Search by text or id"
+                placeholder="Text or id"
                 autofocus
               />
             </div>
+            <b-button
+              size="sm"
+              variant="outline-secondary"
+              @click="reset(); rows = []; loading = true; updateQueryState(); init()"
+            >
+              <i class="fa fa-refresh mr-1"></i>
+              Reset
+            </b-button>
+            <b-button
+              size="sm"
+              variant="outline-warning"
+              @click="newEmote()"
+            >
+              <i class="fa fa-plus mr-1"></i>
+              New
+            </b-button>
           </div>
 
           <div

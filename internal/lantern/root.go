@@ -83,11 +83,22 @@ func resolveModelPath(rootDir, rawRel string) (string, error) {
 	if !isWithinRoot(rootDir, full) {
 		return "", fmt.Errorf("model path resolves outside the lantern root")
 	}
-	info, err := os.Stat(full)
+	evalRoot, err := filepath.EvalSymlinks(rootDir)
+	if err != nil {
+		evalRoot = rootDir
+	}
+	evalFull, err := filepath.EvalSymlinks(full)
+	if err != nil {
+		return "", fmt.Errorf("model file not found")
+	}
+	if !isWithinRoot(evalRoot, evalFull) {
+		return "", fmt.Errorf("model path resolves outside the lantern root")
+	}
+	info, err := os.Stat(evalFull)
 	if err != nil || !info.Mode().IsRegular() {
 		return "", fmt.Errorf("model file not found")
 	}
-	return full, nil
+	return evalFull, nil
 }
 
 type ZoneInfo struct {
@@ -130,4 +141,42 @@ func listZones(rootDir string) ([]ZoneInfo, error) {
 
 func zoneModelRel(zone string) string {
 	return zone + "/Zone/" + zone + ".glb"
+}
+
+type ObjectModel struct {
+	ModelName    string `json:"modelName"`
+	ModelRelPath string `json:"modelRelPath"`
+}
+
+func listObjectModels(rootDir, zone string) ([]ObjectModel, error) {
+	dir := filepath.Join(rootDir, zone, "Objects")
+	info, err := os.Stat(dir)
+	if err != nil || !info.IsDir() {
+		return []ObjectModel{}, nil
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	models := make([]ObjectModel, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if !strings.EqualFold(filepath.Ext(name), ".glb") {
+			continue
+		}
+		modelName := strings.ToLower(strings.TrimSuffix(name, filepath.Ext(name)))
+		rel := filepath.ToSlash(filepath.Join(zone, "Objects", name))
+		abs := filepath.Join(rootDir, zone, "Objects", name)
+		if !isWithinRoot(rootDir, abs) {
+			continue
+		}
+		models = append(models, ObjectModel{
+			ModelName:    modelName,
+			ModelRelPath: rel,
+		})
+	}
+	return models, nil
 }

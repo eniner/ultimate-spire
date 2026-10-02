@@ -44,8 +44,8 @@
                 <tr
                   v-for="row in rows"
                   :key="rowKey(row)"
-                  @click="selected = Object.assign({}, row)"
-                  :class="{ 'peq-row-selected': selected && rowKey(selected) === rowKey(row) }"
+                  @click="selectRow(row)"
+                  :class="{ 'peq-row-selected': selected && rowKey(original || selected) === rowKey(row) }"
                 >
                   <td v-for="col in columns" :key="col" class="text-center">{{ row[col] }}</td>
                 </tr>
@@ -69,7 +69,7 @@
         <eq-window title="Edit row" class="p-3">
           <div class="form-group" v-for="col in columns" :key="col">
             <label class="small mb-0">{{ col }}</label>
-            <input class="form-control form-control-sm" v-model="selected[col]">
+            <input class="form-control form-control-sm" v-model="selected[col]" :disabled="isPrimaryKey(col)">
           </div>
           <div>
             <button class="btn btn-sm btn-dark mr-1" :disabled="saving" @click="saveRow">
@@ -105,6 +105,7 @@ export default {
       loading: false,
       saving: false,
       status: "",
+      original: null,
     }
   },
   async mounted() {
@@ -133,9 +134,30 @@ export default {
       return keys.map((key) => String(row[key] != null ? row[key] : "")).join("|")
     },
     pk(row) {
+      const source = row || {}
       const out = {}
       this.primaryKey.forEach((key) => {
-        out[key] = row[key]
+        out[key] = source[key]
+      })
+      return out
+    },
+    isPrimaryKey(col) {
+      return this.primaryKey.indexOf(col) !== -1
+    },
+    selectRow(row) {
+      this.selected = Object.assign({}, row)
+      this.original = Object.assign({}, row)
+    },
+    dirtyRow(row) {
+      const out = {}
+      this.columns.forEach((col) => {
+        if (this.isPrimaryKey(col)) {
+          return
+        }
+        if (this.original && String(this.original[col]) === String(row[col])) {
+          return
+        }
+        out[col] = row[col]
       })
       return out
     },
@@ -153,16 +175,19 @@ export default {
       try {
         const [list, count] = await Promise.all([
           PeqRawApi.list(this.table, this.search, this.page, this.pageSize),
-          PeqRawApi.count(this.table),
+          PeqRawApi.count(this.table, this.search),
         ])
         this.rows = list.rows || []
         this.columns = list.columns || (this.rows[0] ? Object.keys(this.rows[0]) : [])
         this.primaryKey = list.primaryKey || []
         this.totalRows = count
         if (this.selected) {
-          const key = this.rowKey(this.selected)
+          const key = this.original ? this.rowKey(this.original) : this.rowKey(this.selected)
           const still = this.rows.find((row) => this.rowKey(row) === key)
-          this.selected = still ? Object.assign({}, still) : this.selected
+          if (still) {
+            this.selected = Object.assign({}, still)
+            this.original = Object.assign({}, still)
+          }
         }
       } catch (err) {
         this.status = this.errorText(err)
@@ -196,7 +221,12 @@ export default {
       }
       this.saving = true
       try {
-        await PeqRawApi.update(this.table, this.selected, this.pk(this.selected))
+        const body = this.dirtyRow(this.selected)
+        if (!Object.keys(body).length) {
+          this.status = "No changes"
+          return
+        }
+        await PeqRawApi.update(this.table, body, this.pk(this.original || this.selected))
         this.status = "Saved"
         await this.load()
       } catch (err) {
@@ -214,9 +244,10 @@ export default {
       }
       this.saving = true
       try {
-        await PeqRawApi.remove(this.table, this.pk(this.selected))
+        await PeqRawApi.remove(this.table, this.pk(this.original || this.selected))
         this.status = "Deleted"
         this.selected = null
+        this.original = null
         await this.load()
       } catch (err) {
         this.status = this.errorText(err)

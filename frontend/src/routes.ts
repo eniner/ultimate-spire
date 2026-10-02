@@ -67,5 +67,10 @@ export const ROUTE = {
   MERCHANT_EDIT: "/merchant/%s",
   USER_MANAGEMENT: "/users",
   ZONES: "/zones",
+  ZONE_CONTROLLER: "/zones/controller",
+  ZONE_CONTROLLER_BUILDER: "/zones/controller/builder",
+  ZONE_CONTROLLER_SYSTEMS: "/zones/controller/systems",
+  ZONE_CONTROLLER_ZONE: "/zones/controller/:zoneId",
+  ULTIMATE_SYSTEMS: "/systems",
   ZONE_ATLAS: "/zone/:zone/atlas",
 };

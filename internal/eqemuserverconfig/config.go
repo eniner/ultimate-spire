@@ -31,7 +31,7 @@ type DatabaseConfig struct {
 	Host     string `json:"host,omitempty"`
 	Port     string `json:"port,omitempty"`
 	Username string `json:"username,omitempty"`
-	Password string `json:"password,omitempty"`
+	Password string `json:"password"`
 }
 
 type WebAdminLauncherConfig struct {

@@ -1,8 +1,8 @@
 <template>
   <content-area style="padding: 0px !important">
     <eq-window title="Expansion Stats">
+      <div class="ui-stat-line mb-3">Row counts by table and expansion.</div>
       <div style="overflow-y: hidden; overflow-x: scroll">
-        Filters by Expansion and Table
         <table
           class="eq-table eq-highlight-rows expansion-data-table"
           style="display: table; font-size: 14px;"

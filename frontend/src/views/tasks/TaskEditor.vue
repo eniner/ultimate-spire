@@ -3,93 +3,101 @@
     <div class="row">
       <div :class="(task ? 'col-7' : 'col-12') + ' p-0'">
         <eq-window-simple
-          title="Task Editor"
+          title="Tasks"
           v-if="tasks"
           @mouseover.native="previewTask()"
         >
           <div class="row">
             <div :class="(task ? 'col-4' : 'col-12') + ' p-0'">
-              <!-- Task List -->
-              <div style="" class="">
-
-                <div class="text-center mt-3">
-                  <div class="btn-group" role="group">
-                    <b-button
-                      @click="createTask()"
-                      size="sm"
-                      :disabled="saveFreeze"
-                      variant="outline-warning btn-dark"
-                    >
-                      <i class="fa fa-plus mr-1"></i>
-                      New
-                    </b-button>
-
-                    <b-button
-                      @click="cloneTask()"
-                      size="sm"
-                      :disabled="saveFreeze"
-                      variant="outline-light btn-dark"
-                      v-if="selectedTask"
-                    >
-                      <i class="ra ra-double-team"></i>
-                      Clone
-                    </b-button>
-
-                    <b-button
-                      @click="deleteTask()"
-                      :disabled="saveFreeze"
-                      size="sm"
-                      variant="outline-danger btn-dark"
-                      v-if="selectedTask"
-                    >
-                      <i class="fa fa-trash"></i>
-                      Delete
-                    </b-button>
+              <div class="task-list-pane" :class="{ 'is-compact': !!task }">
+                <div class="task-toolbar">
+                  <div class="ui-stat-line mr-auto">
+                    <b>{{ filteredTasks.length }}</b> of <b>{{ tasks.length }}</b>
                   </div>
-                </div>
 
-                <b-input-group class="mt-3">
-                  <b-form-input
-                    type="text"
-                    placeholder="Filter results by name..."
+                  <input
+                    type="search"
+                    class="form-control form-control-sm task-search"
+                    placeholder="ID or title"
+                    aria-label="Search tasks"
                     v-model="taskSearchFilter"
                     autofocus
                     :disabled="saveFreeze"
-                    @keyup="filterResultsByName"
-                    class="form-control"
-                  />
-                  <b-input-group-append>
-                    <b-button
-                      variant="warning"
-                      style="padding: 0.3rem 0.75rem;"
-                      @click="resetFilter()"
-                    ><i class="fa fa-refresh"></i>
-                    </b-button>
-                  </b-input-group-append>
-                </b-input-group>
-
-                <select
-                  id="task-list"
-                  :disabled="saveFreeze"
-                  size="2"
-                  v-model="selectedTask"
-                  @change="selectTask()"
-                  class="form-control eq-input eq p-1 mt-3 eq-dark-background"
-                  style="overflow-x: scroll; height: 75vh; overflow-y: scroll"
-                >
-                  <option
-                    v-for="task in filteredTasks"
-                    :id="'task-entry-' + task.id"
-                    :value="task.id"
+                    @input="applyFilters()"
                   >
-                    ({{ task.id }}) {{ task.title }}
-                  </option>
-                </select>
 
-                <div class="mt-3 text-center">
-                  Showing {{ filteredTasks.length }} out of {{ tasks.length }} tasks
+                  <select
+                    class="form-control form-control-sm task-type-filter"
+                    aria-label="Filter by type"
+                    v-model="typeFilter"
+                    :disabled="saveFreeze"
+                    @change="applyFilters()"
+                  >
+                    <option value="">All types</option>
+                    <option v-for="(name, id) in TASK_TYPES" :key="id" :value="String(id)">{{ name }}</option>
+                  </select>
+
+                  <b-button size="sm" variant="outline-warning" :disabled="saveFreeze" @click="createTask()">
+                    <i class="fa fa-plus"></i> New
+                  </b-button>
+                  <b-button
+                    v-if="task"
+                    size="sm"
+                    variant="outline-light"
+                    :disabled="saveFreeze"
+                    @click="cloneTask()"
+                  >
+                    Clone
+                  </b-button>
+                  <b-button
+                    v-if="task"
+                    size="sm"
+                    variant="outline-danger"
+                    :disabled="saveFreeze"
+                    @click="deleteTask()"
+                  >
+                    Delete
+                  </b-button>
                 </div>
 
+                <div id="task-list" class="task-list-scroll">
+                  <table class="eq-table task-table">
+                    <thead>
+                    <tr>
+                      <th class="tabular" style="width: 70px">ID</th>
+                      <th>Title</th>
+                      <th style="width: 130px">Type</th>
+                      <th v-if="!task" style="width: 110px">Duration</th>
+                      <th v-if="!task" style="width: 90px">Levels</th>
+                      <th v-if="!task" style="width: 50px"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr
+                      v-for="row in filteredTasks"
+                      :id="'task-entry-' + row.id"
+                      :key="row.id"
+                      class="task-row"
+                      :class="{ 'is-selected': Number((task && task.id) || selectedTask) === Number(row.id) }"
+                      @click="openTask(row.id)"
+                    >
+                      <td class="tabular">{{ row.id }}</td>
+                      <td class="task-title-cell">{{ row.title || "(untitled)" }}</td>
+                      <td class="text-muted">{{ taskTypeName(row.type) }}</td>
+                      <td v-if="!task" class="text-muted">{{ durationLabel(row) }}</td>
+                      <td v-if="!task" class="tabular text-muted">{{ levelLabel(row) }}</td>
+                      <td v-if="!task">
+                        <span v-if="Number(row.enabled) !== 1" class="badge badge-secondary">Off</span>
+                      </td>
+                    </tr>
+                    </tbody>
+                  </table>
+
+                  <div v-if="!filteredTasks.length" class="ui-empty mt-3">
+                    <div class="ui-empty-title">No tasks match</div>
+                    Try a different ID or title, or clear the type filter.
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1248,6 +1256,7 @@ export default {
       selectedTask: null,
       selectedActivity: null,
       taskSearchFilter: "",
+      typeFilter: "",
 
       // preview / selectors
       selectorActive: {},
@@ -1446,7 +1455,7 @@ export default {
       if (!this.scrolledToActivity) {
         if (this.selectedActivity) {
           const container = document.getElementById("activities-scroll");
-          const target    = document.getElementById(util.format("task-entry-%s", this.selectedActivity))
+          const target    = document.getElementById("activities-entry" + this.selectedActivity)
           if (container && target) {
             container.scrollTo({top: target.offsetTop - 150, behavior: "smooth"});
           }
@@ -1989,6 +1998,7 @@ export default {
       this.selectedTask     = null;
       this.selectedActivity = null;
       this.taskSearchFilter = "";
+      this.typeFilter       = "";
     },
 
     resetStateAll() {
@@ -2004,9 +2014,61 @@ export default {
     },
 
     resetFilter() {
-      this.filteredTasks    = this.tasks
       this.taskSearchFilter = ""
+      this.typeFilter       = ""
+      this.applyFilters()
       this.updateQueryState()
+    },
+
+    applyFilters() {
+      const q = (this.taskSearchFilter || "").toLowerCase().trim()
+      const type = this.typeFilter === "" ? null : Number(this.typeFilter)
+      this.filteredTasks = (this.tasks || []).filter((row) => {
+        if (type !== null && Number(row.type) !== type) {
+          return false
+        }
+        if (!q) {
+          return true
+        }
+        if (String(row.id) === q) {
+          return true
+        }
+        return String(row.title || "").toLowerCase().includes(q)
+      })
+    },
+
+    taskTypeName(type) {
+      return this.TASK_TYPES[type] || "Type " + type
+    },
+
+    durationLabel(row) {
+      if (this.TASK_DURATION_HUMAN[row.duration]) {
+        return this.TASK_DURATION_HUMAN[row.duration]
+      }
+      if (!row.duration) {
+        return "Infinite"
+      }
+      return row.duration + "s"
+    },
+
+    levelLabel(row) {
+      const min = Number(row.min_level) || 0
+      const max = Number(row.max_level) || 0
+      if (!min && !max) {
+        return "Any"
+      }
+      if (min && max && min !== max) {
+        return min + "–" + max
+      }
+      return String(min || max)
+    },
+
+    openTask(id) {
+      if (this.saveFreeze) {
+        return
+      }
+      this.selectedTask = id
+      this.selectTask()
     },
 
     getFieldDescription(field) {
@@ -2019,12 +2081,7 @@ export default {
     },
 
     async filterResultsByName() {
-      let filteredTasks = [];
-      filteredTasks     = this.tasks.filter((task) => {
-        return task.title.toLowerCase().includes(this.taskSearchFilter.toLowerCase())
-      })
-
-      this.filteredTasks = filteredTasks;
+      this.applyFilters()
     },
 
     async loadTask() {
@@ -2037,6 +2094,9 @@ export default {
         }
 
         this.task = (await Tasks.getTask(this.$route.params.id))
+        if (this.task && this.task.id) {
+          this.selectedTask = parseInt(this.task.id)
+        }
 
         // only load these once
         if (Object.keys(this.zoneNames).length === 0) {
@@ -2050,12 +2110,9 @@ export default {
 
         setTimeout(() => {
 
-          // task list scroll to task
-          const container = document.getElementById("task-list");
-          const target    = document.getElementById(util.format("task-entry-%s", this.$route.params.id))
-          if (container && target) {
-            // container.scrollTop = target.offsetTop - 100;
-            container.scrollTo({top: target.offsetTop - 150, behavior: "smooth"});
+          const target = document.getElementById(util.format("task-entry-%s", this.$route.params.id))
+          if (target && target.scrollIntoView) {
+            target.scrollIntoView({block: "center", behavior: "smooth"})
           }
 
           // hooks
@@ -2116,14 +2173,13 @@ export default {
       if (tasks.length > 0) {
         this.tasks         = tasks
         this.filteredTasks = tasks
-        this.filterResultsByName()
+        this.applyFilters()
       }
     },
     async init() {
-      if (Object.keys(this.$route.query).length !== 0) {
-        this.loadQueryState()
-      }
+      this.loadQueryState()
       await this.loadTasks()
+      this.applyFilters()
       this.loadTask().then(() => {
         this.previewTask(true)
         EditFormFieldUtil.resetFieldEditedStatus()
@@ -2153,6 +2209,9 @@ export default {
       if (this.taskSearchFilter !== "") {
         queryState.q = this.taskSearchFilter
       }
+      if (this.typeFilter !== "") {
+        queryState.type = this.typeFilter
+      }
 
       // navigation
       this.$router.push(
@@ -2173,6 +2232,9 @@ export default {
       }
       if (typeof this.$route.query.q !== 'undefined' && this.$route.query.q) {
         this.taskSearchFilter = this.$route.query.q
+      }
+      if (typeof this.$route.query.type !== 'undefined' && this.$route.query.type !== "") {
+        this.typeFilter = String(this.$route.query.type)
       }
     },
 
@@ -2212,12 +2274,71 @@ export default {
 </script>
 
 <style>
-#task-list {
-  overflow-y: scroll;
-  height: 80vh;
-  overflow-x: hidden;
-  white-space: nowrap;
-  border-radius: 5px;
+.task-list-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
+.task-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 4px 8px;
+}
+
+.task-search {
+  width: 220px;
+}
+
+.task-type-filter {
+  width: 150px;
+}
+
+.task-list-scroll {
+  overflow: auto;
+  height: 75vh;
+}
+
+.task-list-pane.is-compact .task-list-scroll {
+  height: 72vh;
+}
+
+.task-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.task-row {
+  cursor: pointer;
+}
+
+.task-row.is-selected td {
+  background: var(--accent-soft, rgba(232, 176, 74, 0.12));
+  box-shadow: inset 2px 0 0 var(--accent, #e8b04a);
+}
+
+.task-title-cell {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.task-list-pane.is-compact .task-title-cell {
+  max-width: 180px;
+}
+
+.task-list-pane.is-compact .task-search {
+  width: 140px;
+}
+
+.task-list-pane.is-compact .task-type-filter {
+  width: 120px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
 </style>

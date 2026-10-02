@@ -56,6 +56,9 @@
       </div>
 
       <div class="collapse navbar-collapse" id="sidebarCollapse">
+        <p v-if="isDemo()" class="navbar-heading mt-2" style="color:#c9a24a">
+          Public demo · stock installer PEQ · read only
+        </p>
         <div v-if="isAppLocal()">
           <h6 class="navbar-heading mt-3">
             Admin
@@ -142,6 +145,18 @@
                 <i class="ra ra-wooden-sign mr-2"></i> Zones
                 <b-badge class="ml-3" variant="primary">ALPHA</b-badge>
                 <b-badge class="ml-3" variant="primary">NEW!</b-badge>
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link" to="/zones/controller">
+                <i class="ra ra-cog mr-2"></i> Zone Controller
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link" to="/systems">
+                <i class="ra ra-lightning-trio mr-2"></i> Talents / Runewords
               </router-link>
             </li>
           </ul>
@@ -316,6 +331,7 @@ import NavSectionComponent    from "@/components/layout/NavSectionComponent";
 import {ROUTE}                from "@/routes";
 import {EventBus}             from "@/app/event-bus/event-bus";
 import {AppEnv}               from "@/app/env/app-env";
+import {isDemoMode}           from "@/app/demo-mode";
 import {Navbar}               from "@/app/navbar";
 import DbConnectionStatusPill from "@/components/DbConnectionStatusPill";
 import {SpireApi}             from "@/app/api/spire-api";
@@ -779,6 +795,9 @@ export default {
         { name: "[Quest API] Explorer (Perl)", route: `${ROUTE.QUEST_API_EXPLORER}?lang=perl` },
         { name: "[Quest API] Explorer (Lua)", route: `${ROUTE.QUEST_API_EXPLORER}?lang=lua` },
         { name: "Zones", route: ROUTE.ZONES },
+        { name: "Zone Controller", route: ROUTE.ZONE_CONTROLLER },
+        { name: "Zone Controller Builder", route: ROUTE.ZONE_CONTROLLER_BUILDER },
+        { name: "Talents / Runewords", route: ROUTE.ULTIMATE_SYSTEMS },
         { name: "PEQ Editors", route: ROUTE.EDITORS },
         { name: "Loot", route: ROUTE.LOOT },
         { name: "Factions", route: "/editors/factions" },
@@ -822,6 +841,9 @@ export default {
 
     isAppLocal() {
       return AppEnv.isAppLocal()
+    },
+    isDemo() {
+      return isDemoMode()
     },
 
     isUserLoggedIn() {

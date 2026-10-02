@@ -4,56 +4,71 @@
       <div :class="(isSubEditActive() ? 'col-6' : 'col-12')">
 
         <eq-window-simple title="Strings Database">
-          <div class="row">
-            <div :class="(selectedType >= 0 ? 'col-10' : 'col-12') + ' text-center'">
-              <b-form-select
-                v-model.number="selectedType"
-                @change="resetSelections(); updateQueryState()"
-                class="mt-3 form-control"
-              >
-                <option value="-1">--- Select ---</option>
-                <option
-                  v-for="(description, index) in DB_STR_TYPES"
-                  :key="index"
-                  :value="parseInt(index)"
-                >
-                  {{ index }}) {{ description }} ({{ typeCounts[index] ? commify(typeCounts[index]) : 0 }})
-                </option>
-              </b-form-select>
+          <div class="ui-toolbar">
+            <div class="ui-stat-line mr-auto" v-if="selectedType < 0">
+              <b>{{ typeRows.length }}</b> types
             </div>
-
-            <div class="col-2 text-center" v-if="selectedType >= 0">
-              <b-button
-                @click="createString()"
-                class="mt-3"
-                size="sm"
-                variant="outline-warning"
-              >
-                <i class="fa fa-plus"></i>
-                Create
-              </b-button>
+            <div class="ui-stat-line mr-auto" v-else>
+              Type <b>{{ selectedType }}</b> · {{ DB_STR_TYPES[selectedType] }} ·
+              <b>{{ strings.length }}</b> strings
             </div>
-
-          </div>
-
-          <div class="row">
-            <div
-              class="col-12 text-center font-weight-bold mt-3"
-              v-if="strings && strings.length > 0 && !loading && !isSubEditActive()"
+            <b-button
+              v-if="selectedType >= 0"
+              size="sm"
+              variant="outline-secondary"
+              @click="selectedType = -1; resetSelections(); updateQueryState()"
             >
-              Select a row to edit
-            </div>
-
+              All types
+            </b-button>
+            <b-button
+              v-if="selectedType >= 0"
+              @click="createString()"
+              size="sm"
+              variant="outline-warning"
+            >
+              <i class="fa fa-plus"></i>
+              Create
+            </b-button>
           </div>
 
-          <div class="text-center mt-3" v-if="loading">
-            Loading
+          <table
+            class="eq-table"
+            v-if="selectedType < 0"
+          >
+            <thead>
+            <tr>
+              <th style="width: 80px">Type</th>
+              <th>Name</th>
+              <th style="width: 110px" class="text-right">Count</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+              v-for="row in typeRows"
+              :key="row.id"
+              class="task-row"
+              @click="selectedType = row.id; resetSelections(); updateQueryState()"
+            >
+              <td class="tabular">{{ row.id }}</td>
+              <td>{{ row.name }}</td>
+              <td class="tabular text-right">{{ commify(row.count) }}</td>
+            </tr>
+            </tbody>
+          </table>
+
+          <div class="ui-stat-line" v-if="selectedType >= 0 && strings && strings.length > 0 && !loading && !isSubEditActive()">
+            Select a row to edit
+          </div>
+
+          <div class="ui-empty" v-if="loading">
+            <div class="ui-empty-title">Loading</div>
             <loader-fake-progress class="mt-3"/>
           </div>
 
         </eq-window-simple>
 
         <eq-window-simple
+          title="Strings"
           style="height: 80vh; overflow-y: scroll; overflow-x: hidden"
           class="mt-3"
           id="db-strings-list"
@@ -215,6 +230,19 @@ export default {
 
       DB_STR_TYPES: DB_STR_TYPES
     }
+  },
+
+  computed: {
+    typeRows() {
+      return Object.keys(this.DB_STR_TYPES).map((id) => {
+        const num = parseInt(id)
+        return {
+          id: num,
+          name: this.DB_STR_TYPES[id],
+          count: this.typeCounts[num] || this.typeCounts[id] || 0,
+        }
+      }).sort((a, b) => a.id - b.id)
+    },
   },
 
   watch: {

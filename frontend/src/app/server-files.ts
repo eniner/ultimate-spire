@@ -41,13 +41,13 @@ export class ServerFilesApi {
     return r.data
   }
 
-  static async read(path: string): Promise<{content: string; writable: boolean; path: string}> {
+  static async read(path: string): Promise<{content: string; writable: boolean; path: string; hash?: string}> {
     const r = await SpireApi.v1().get("/admin/server-files/file", {params: {path}})
     return r.data
   }
 
-  static async save(path: string, content: string) {
-    const r = await SpireApi.v1().put("/admin/server-files/file", {path, content})
+  static async save(path: string, content: string, expectedHash = "") {
+    const r = await SpireApi.v1().put("/admin/server-files/file", {path, content, expectedHash})
     return r.data
   }
 

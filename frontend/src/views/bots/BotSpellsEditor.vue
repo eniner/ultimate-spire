@@ -6,37 +6,28 @@
           title="Bot Spells"
           class="p-0"
         >
-          <div class="row minified-inputs mt-4 text-center">
-            <div class="col-3 p-0 text-right">
-              <div class="d-inline-block btn-group ml-4 text-right" role="group" style="margin-top: 26px">
-                <b-button
-                  size="sm"
-                  variant="outline-warning"
-                  @click="zeroState();"
-                >
-                  <i class="fa fa-refresh mr-1"></i>
-                  Reset
-                </b-button>
-              </div>
-            </div>
-
-            <div class="col-4">
-              Search
+          <div class="ui-toolbar">
+            <div class="ui-field" style="flex: 1 1 260px; margin-bottom: 0">
+              <label>Search</label>
               <b-form-input
                 v-model="search"
                 v-on:keyup="doSearch()"
-                placeholder="Search by text or id"
+                placeholder="Text or id"
                 autofocus
               />
             </div>
-
-            <div class="col-2" v-if="loading">
-              <div class="text-center" style="margin-top: 17px">
-                Loading...
-                <loader-fake-progress/>
-              </div>
+            <b-button
+              size="sm"
+              variant="outline-secondary"
+              @click="zeroState();"
+            >
+              <i class="fa fa-refresh mr-1"></i>
+              Reset
+            </b-button>
+            <div class="ui-stat-line" v-if="loading">
+              Loading
+              <loader-fake-progress/>
             </div>
-
           </div>
 
           <!-- Notification / Error -->
