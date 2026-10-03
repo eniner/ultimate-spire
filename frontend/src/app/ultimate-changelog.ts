@@ -16,6 +16,15 @@ export const ULTIMATE_CHANGELOG: ChangelogRelease[] = [
     items: [],
   },
   {
+    version: "4.24.7",
+    date: "10/3/2026",
+    items: [
+      {area: "Telnet", text: "Spire dials 127.0.0.1 plus world.telnet.port from eqemu_config.json (override SPIRE_TELNET_ADDR). This server listens on 9002; World TCP 9000 is not telnet. Zone list, reload types, and Zone Controller live status work again."},
+      {area: "Server Config", text: "The second World field is labeled Telnet Port, not a second Telnet IP. Help text says it must match the config, not \"keep at 9000\"."},
+      {area: "Items", text: "Table search no longer loads the full drop/merchant/spawn graph. Common names such as Cloth Cap finish instead of hanging on PLEASE WAIT."},
+    ],
+  },
+  {
     version: "4.24.6",
     date: "10/3/2026",
     items: [

@@ -1,14 +1,17 @@
 package telnet
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/EQEmu/spire/internal/env"
-	"github.com/EQEmu/spire/internal/logger"
-	"github.com/ziutek/telnet"
-	"runtime"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/EQEmu/spire/internal/env"
+	"github.com/EQEmu/spire/internal/logger"
+	"github.com/ziutek/telnet"
 )
 
 // Client is a telnet client
@@ -28,8 +31,79 @@ func NewClient(logger *logger.AppLogger) *Client {
 }
 
 const (
-	linebreak = "\n\r> "
+	linebreak     = "\n\r> "
+	defaultAddr   = "127.0.0.1:9000"
+	dialTimeout   = 2 * time.Second
+	commandTimeout = 5 * time.Second
 )
+
+var (
+	addrOnce sync.Once
+	addrVal  string
+)
+
+// ResolveAddr returns the world telnet address Spire should dial.
+// SPIRE_TELNET_ADDR wins, then world.telnet.port from eqemu_config.json, then 127.0.0.1:9000.
+func ResolveAddr() string {
+	addrOnce.Do(func() {
+		addrVal = resolveAddr()
+	})
+	return addrVal
+}
+
+func resolveAddr() string {
+	if v := strings.TrimSpace(os.Getenv("SPIRE_TELNET_ADDR")); v != "" {
+		return v
+	}
+
+	type telnetCfg struct {
+		Port string `json:"port"`
+	}
+	type cfgFile struct {
+		Server struct {
+			World struct {
+				Telnet telnetCfg `json:"telnet"`
+			} `json:"world"`
+		} `json:"server"`
+	}
+
+	candidates := []string{"eqemu_config.json", filepath.Join("..", "eqemu_config.json")}
+	if cwd, err := os.Getwd(); err == nil {
+		candidates = append([]string{
+			filepath.Join(cwd, "eqemu_config.json"),
+			filepath.Join(cwd, "..", "eqemu_config.json"),
+		}, candidates...)
+	}
+	if exe, err := os.Executable(); err == nil {
+		dir := filepath.Dir(exe)
+		candidates = append(candidates,
+			filepath.Join(dir, "eqemu_config.json"),
+			filepath.Join(dir, "..", "eqemu_config.json"),
+		)
+	}
+
+	seen := map[string]bool{}
+	for _, path := range candidates {
+		if path == "" || seen[path] {
+			continue
+		}
+		seen[path] = true
+		body, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		var cfg cfgFile
+		if json.Unmarshal(body, &cfg) != nil {
+			continue
+		}
+		port := strings.TrimSpace(cfg.Server.World.Telnet.Port)
+		if port == "" {
+			continue
+		}
+		return "127.0.0.1:" + port
+	}
+	return defaultAddr
+}
 
 // Connect connects to the telnet server
 func (c *Client) Connect() error {
@@ -43,12 +117,9 @@ func (c *Client) Connect() error {
 		c.Close()
 	}
 
-	d := 2 * time.Second // Increased timeout for stability
-	if runtime.GOOS == "windows" {
-		d = 100 * time.Millisecond
-	}
+	d := dialTimeout
 
-	c.t, err = telnet.DialTimeout("tcp", "127.0.0.1:9000", d)
+	c.t, err = telnet.DialTimeout("tcp", ResolveAddr(), d)
 	if err != nil {
 		return err
 	}
@@ -147,11 +218,11 @@ func (c *Client) Command(cmd CommandConfig) (string, error) {
 		return "", c.fail(err)
 	}
 
-	err = c.t.SetReadDeadline(time.Now().Add(1 * time.Second))
+	err = c.t.SetReadDeadline(time.Now().Add(commandTimeout))
 	if err != nil {
 		return "", c.fail(err)
 	}
-	err = c.t.SetWriteDeadline(time.Now().Add(1 * time.Second))
+	err = c.t.SetWriteDeadline(time.Now().Add(commandTimeout))
 	if err != nil {
 		return "", c.fail(err)
 	}

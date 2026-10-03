@@ -412,6 +412,16 @@ export class Items {
     ]
   }
 
+  // Shallow associations for the items browser. Full spawn trees belong on the editor.
+  public static getListRelationships() {
+    return [
+      "LootdropEntries",
+      "LootdropEntries.Lootdrop",
+      "Merchantlists",
+      "Merchantlists.NpcTypes",
+    ]
+  }
+
   static async getItemIconsByName(search: string) {
     const api = (new ItemApi(...SpireApi.cfg()))
     try {

@@ -242,7 +242,7 @@ function demoBody(config: any) {
       data: {
         os: "demo",
         env: "local",
-        version: "4.24.6-demo",
+        version: "4.24.7-demo",
         features: {github_auth_enabled: false},
         settings: [{setting: "AUTH_ENABLED", value: "false"}],
         is_spire_initialized: true,

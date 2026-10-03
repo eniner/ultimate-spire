@@ -31,7 +31,7 @@ func (s *Service) LiveStatus(ids []int) LiveStatus {
 	out := LiveStatus{Zones: []LiveZone{}}
 	if s.world == nil {
 		out.Error = "World telnet is not wired"
-		out.WorldNote = "Spire cannot see popped zones until World is accepting telnet on 127.0.0.1:9000."
+		out.WorldNote = "Spire cannot see popped zones until World is accepting telnet. Spire dials 127.0.0.1 plus world.telnet.port from eqemu_config.json."
 		for _, id := range ids {
 			out.Zones = append(out.Zones, s.offlineLiveZone(id))
 		}

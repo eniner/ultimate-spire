@@ -120,13 +120,13 @@
               </div>
 
               <div class="form-group col-md-6" v-show="config.server.world.telnet.enabled">
-                <label class="form-label">Telnet IP</label>
+                <label class="form-label">Telnet Port</label>
                 <input
                   type="text" class="form-control"
                   v-model="config.server.world.telnet.port"
                 />
                 <small class="form-text text-muted mt-3">
-                  Port for telnet to listen on. Keep this at 9000
+                  Port World listens on for telnet. Must match world.telnet.port in eqemu_config.json. Spire dials 127.0.0.1 on this port (9000 is common; this server uses whatever is saved here).
                 </small>
               </div>
             </div>

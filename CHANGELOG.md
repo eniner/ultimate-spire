@@ -4,6 +4,12 @@ Notes for this build (`eniner/ultimate-spire`). The same notes live in the app a
 
 ## [Unreleased]
 
+## [4.24.7] 10/3/2026
+
+* **Telnet** Spire dials `127.0.0.1` plus `world.telnet.port` from `eqemu_config.json` (override `SPIRE_TELNET_ADDR`). This server listens on 9002; World TCP 9000 is not telnet. Zone list, reload types, and Zone Controller live status work again.
+* **Server Config** The second World field is labeled Telnet Port, not a second Telnet IP. Help text says it must match the config, not "keep at 9000".
+* **Items** Table search no longer loads the full drop/merchant/spawn graph. Common names such as Cloth Cap finish instead of hanging on PLEASE WAIT.
+
 ## [4.24.6] 10/3/2026
 
 * **Changelog** In-app Ultimate notes at `/changelog`. Filter versions and generate markdown for `CHANGELOG.md` or a GitHub release. Vue serve no longer depends on a Go rebuild to show new notes.

@@ -816,20 +816,27 @@ export default {
 
       builder.groupBy(["id"])
       builder.limit(this.limit)
-      builder.includes(Items.getRelationships())
+      // List/table does not need drop/merchant/spawn trees. Those includes can return
+      // tens of MB and leave the page stuck on the loader.
+      if (this.listType === "card") {
+        builder.includes(Items.getListRelationships())
+      }
 
       try {
         const r = await api.listItems(builder.get())
         if (r.status === 200) {
-          // set items to be rendered
           this.items = r.data
-          this.loaded = true;
+        } else {
+          this.error = "Item search failed (" + r.status + ")"
         }
       } catch (e) {
         if (e.response && e.response.data && e.response.data.error) {
           this.error = e.response.data.error
-          this.loaded = true
+        } else {
+          this.error = (e && e.message) ? e.message : "Item search failed"
         }
+      } finally {
+        this.loaded = true
       }
     }
   }
