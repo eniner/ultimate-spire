@@ -57,14 +57,17 @@ module.exports = {
   chainWebpack: (config) => {
     config.performance.maxEntrypointSize(40000000).maxAssetSize(40000000);
 
-    // ignore asset preview during development to keep build times down
-    if (process.env.NODE_ENV !== "production" || process.env.VUE_APP_DEMO === "true") {
-      config.plugin("copy").tap(([options]) => {
+    config.plugin("copy").tap(([options]) => {
+      // Keep first-launch assets out of Vue serve and the public demo bundle.
+      if (process.env.NODE_ENV !== "production" || process.env.VUE_APP_DEMO === "true") {
         options[0].ignore.push("eq-asset-preview-master/**/*");
-
-        return [options];
-      });
-    }
+      }
+      // Stock demo PEQ dumps stay out of the Windows exe.
+      if (process.env.VUE_APP_DEMO !== "true") {
+        options[0].ignore.push("demo/**/*");
+      }
+      return [options];
+    });
     //
     config.output
       .filename("[name].[hash].js")

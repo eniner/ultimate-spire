@@ -58,6 +58,7 @@
       <div class="collapse navbar-collapse" id="sidebarCollapse">
         <p v-if="isDemo()" class="navbar-heading mt-2" style="color:#c9a24a">
           Public demo · stock installer PEQ · read only
+          · <a :href="demoZcGuideUrl" style="color:#c9a24a;text-decoration:underline">Zone Controller files</a>
         </p>
         <div v-if="isAppLocal()">
           <h6 class="navbar-heading mt-3">
@@ -87,8 +88,8 @@
 
           <ul class="navbar-nav mb-md-3" v-if="isInAdmin()">
             <li class="nav-item" >
-              <router-link class="nav-link" :to="ROUTE.HOME" exact>
-                <i class="ra ra-relic-blade mr-1"></i> Editing Tools Home
+              <router-link class="nav-link" :to="ROUTE.ULTIMATE_CHANGELOG" exact>
+                <i class="ra ra-scroll-unfurled mr-1"></i> Changelog
               </router-link>
             </li>
           </ul>
@@ -100,6 +101,12 @@
           </h6>
 
           <ul class="navbar-nav mb-md-3">
+            <li class="nav-item">
+              <router-link class="nav-link" :to="ROUTE.ULTIMATE_CHANGELOG" exact>
+                <i class="ra ra-scroll-unfurled mr-1"></i> Changelog
+              </router-link>
+            </li>
+
             <li class="nav-item">
               <router-link class="nav-link" to="/editors">
                 <i class="ra ra-book mr-1"></i> PEQ Editors
@@ -151,6 +158,12 @@
             <li class="nav-item">
               <router-link class="nav-link" to="/zones/controller">
                 <i class="ra ra-cog mr-2"></i> Zone Controller
+              </router-link>
+            </li>
+
+            <li class="nav-item">
+              <router-link class="nav-link" to="/zones/controller/guide">
+                <i class="ra ra-book mr-2"></i> Zone Guide
               </router-link>
             </li>
 
@@ -343,7 +356,7 @@ import NavSectionComponent    from "@/components/layout/NavSectionComponent";
 import {ROUTE}                from "@/routes";
 import {EventBus}             from "@/app/event-bus/event-bus";
 import {AppEnv}               from "@/app/env/app-env";
-import {isDemoMode}           from "@/app/demo-mode";
+import {demoZcGuideUrl, isDemoMode} from "@/app/demo-mode";
 import {Navbar}               from "@/app/navbar";
 import DbConnectionStatusPill from "@/components/DbConnectionStatusPill";
 import {SpireApi}             from "@/app/api/spire-api";
@@ -375,6 +388,9 @@ export default {
         return "fe-grid"
       }
       return this.themeResolved === "dark" ? "fe-moon" : "fe-sun"
+    },
+    demoZcGuideUrl() {
+      return demoZcGuideUrl()
     },
   },
   components: { DbConnectionStatusPill, NavSectionComponent, NavbarDropdownMenu, NavbarUserSettingsCog },
@@ -822,10 +838,13 @@ export default {
         { name: "[Quest API] Explorer (Lua)", route: `${ROUTE.QUEST_API_EXPLORER}?lang=lua` },
         { name: "Zones", route: ROUTE.ZONES },
         { name: "Zone Controller", route: ROUTE.ZONE_CONTROLLER },
+        { name: "Zone systems guide", route: ROUTE.ZONE_CONTROLLER_GUIDE },
         { name: "Zone Controller Builder", route: ROUTE.ZONE_CONTROLLER_BUILDER },
         { name: "Tier Factory", route: ROUTE.ZONE_CONTROLLER_FACTORY },
         { name: "Content Factory", route: ROUTE.CONTENT_FACTORY },
         { name: "Talents / Runewords", route: ROUTE.ULTIMATE_SYSTEMS },
+        { name: "Changelog", route: ROUTE.ULTIMATE_CHANGELOG },
+        { name: "Changelog generator", route: ROUTE.CHANGELOG },
         { name: "PEQ Editors", route: ROUTE.EDITORS },
         { name: "Loot", route: ROUTE.LOOT },
         { name: "Factions", route: "/editors/factions" },

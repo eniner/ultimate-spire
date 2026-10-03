@@ -17,6 +17,7 @@
       <div class="ui-toolbar">
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER">Zone Controller</router-link>
+        <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_GUIDE">Guide</router-link>
         <button type="button" class="btn btn-sm" :class="tab === 'ids' ? 'btn-primary' : 'btn-dark'" @click="tab = 'ids'">IDs</button>
         <button type="button" class="btn btn-sm" :class="tab === 'census' ? 'btn-primary' : 'btn-dark'" @click="tab = 'census'">Census</button>
         <button type="button" class="btn btn-sm" :class="tab === 'catalog' ? 'btn-primary' : 'btn-dark'" @click="tab = 'catalog'; loadCatalog()">Catalog</button>

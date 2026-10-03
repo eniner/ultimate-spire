@@ -59,7 +59,12 @@ const router = new Router({
         {
           path: '/',
           component: () => import('./views/Home.vue'),
-          meta: {title: "Home"},
+          meta: {title: "Changelog"},
+        },
+        {
+          path: ROUTE.ULTIMATE_CHANGELOG,
+          component: () => import('./views/Home.vue'),
+          meta: {title: "Changelog"},
         },
         {
           path: ROUTE.RACE_VIEWER,
@@ -220,6 +225,11 @@ const router = new Router({
           path: ROUTE.CONTENT_FACTORY,
           component: () => import('./views/zone/ContentFactory.vue'),
           meta: {title: "Content Factory"},
+        },
+        {
+          path: ROUTE.ZONE_CONTROLLER_GUIDE,
+          component: () => import('./views/zone/ZoneSystemsGuide.vue'),
+          meta: {title: "Zone systems guide"},
         },
         {
           path: ROUTE.ULTIMATE_SYSTEMS,

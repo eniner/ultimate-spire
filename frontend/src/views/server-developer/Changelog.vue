@@ -1,83 +1,74 @@
 <template>
-  <div>
-    <eq-window title="Changelog Generator">
-      <div class="row">
-        <div class="col-2 text-right">
-          <b-button
-            size="sm"
-            variant="outline-warning"
-            class="form mt-3"
-            @click="generate()"
-          >
-            <i class="fa fa-refresh mr-1"></i>
-            Generate Changelog
-          </b-button>
-        </div>
-
-        <div class="col-10">
-          <div class="eq-alert">
-            This will generate changelog notes of all commits formatted since last release
-          </div>
-        </div>
-
+  <content-area>
+    <eq-window title="Ultimate changelog generator">
+      <p class="zc-copy">
+        Builds notes for this Ultimate Spire build. Use <b>Notes</b> for
+        <code>CHANGELOG.md</code>. Use <b>Release body</b> for the GitHub release.
+      </p>
+      <div class="ui-toolbar">
+        <button type="button" class="btn btn-sm btn-dark" @click="generate('notes')">
+          Generate notes
+        </button>
+        <button type="button" class="btn btn-sm btn-dark" @click="generate('release')">
+          Generate release body
+        </button>
+        <button type="button" class="btn btn-sm btn-dark" :disabled="!changelog" @click="copyToClip(changelog)">
+          Copy
+        </button>
+        <router-link class="btn btn-sm btn-dark" :to="ROUTE.ULTIMATE_CHANGELOG">Open changelog</router-link>
       </div>
     </eq-window>
 
-    <app-loader :is-loading="loading"/>
-
-    <eq-window
-      style="height: 83vh; "
-      class="fade-in text-center p-3" v-if="changelog && !loading">
-      <button
-        class='btn btn-sm btn-dark mb-3'
-        @click="copyToClip(changelog)"
-      >
-        <i class="fa fa-clipboard"></i>
-        Copy to Clipboard
-      </button>
-      <textarea v-model="changelog" style="width: 100%; height: 75vh; overflow-y: scroll"></textarea>
+    <eq-window v-if="changelog" class="mt-3" title="Generated markdown">
+      <textarea v-model="changelog" class="form-control changelog-out" rows="28"></textarea>
     </eq-window>
-
-  </div>
-
+  </content-area>
 </template>
 
 <script>
-import EqWindow   from "@/components/eq-ui/EQWindow.vue";
-import {SpireApi} from "@/app/api/spire-api";
-import ClipBoard  from "@/app/clipboard/clipboard";
-import {Notify}   from "@/app/Notify";
+import EqWindow from "@/components/eq-ui/EQWindow.vue"
+import ContentArea from "@/components/layout/ContentArea"
+import ClipBoard from "@/app/clipboard/clipboard"
+import {Notify} from "@/app/Notify"
+import {ROUTE} from "@/routes"
+import {formatUltimateChangelog, formatUltimateReleaseNotes} from "@/app/ultimate-changelog"
 
 export default {
   name: "Changelog",
-  components: { EqWindow },
+  components: {EqWindow, ContentArea},
   data() {
     return {
-      loading: false,
-
+      ROUTE,
       changelog: "",
     }
   },
   methods: {
-    async generate() {
-      this.loading = true;
-      const r      = await SpireApi.v1().get(`changelog`)
-      if (r.status === 200) {
-        this.changelog = r.data.data
-        this.loading   = false;
-      }
+    generate(kind) {
+      this.changelog = kind === "release" ? formatUltimateReleaseNotes() : formatUltimateChangelog()
     },
     copyToClip(s) {
       ClipBoard.copyFromText(s)
-      console.log(s)
-
-      Notify.toast("Copied to clipboard!");
+      Notify.toast("Copied to clipboard")
     },
-  }
-
+  },
 }
 </script>
 
 <style scoped>
+.zc-copy {
+  color: var(--text-muted, #b7c0cc);
+  margin-bottom: 12px;
+}
 
+.ui-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.changelog-out {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 13px;
+  min-height: 60vh;
+}
 </style>

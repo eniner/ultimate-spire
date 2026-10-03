@@ -13,6 +13,7 @@
 
       <div class="ui-toolbar">
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER">All ZC zones</router-link>
+        <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_GUIDE">Guide</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">Builder</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
         <button type="button" class="btn btn-sm" :class="tab === 'recipe' ? 'btn-primary' : 'btn-dark'" @click="tab = 'recipe'">Recipe</button>

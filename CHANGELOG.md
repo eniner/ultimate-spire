@@ -1,10 +1,43 @@
+# Ultimate Spire
+
+Notes for this build (`eniner/ultimate-spire`). The same notes live in the app at `/changelog`. Stock EQEmu/spire notes start at 4.24.2.
+
+## [Unreleased]
+
+## [4.24.6] 10/3/2026
+
+* **Changelog** In-app Ultimate notes at `/changelog`. Filter versions and generate markdown for `CHANGELOG.md` or a GitHub release. Vue serve no longer depends on a Go rebuild to show new notes.
+* **Zone Guide** In-app walkthrough for new zone kits, minting items, cloning NPCs, the pipeline, and Apply live. Linked from Zone Controller, Builder, Tier Factory, Content Factory, and Talents / Runewords.
+* **Zone Controller pack** Public starter zip with the live `zone_controller.pl`, blank `ultimatedata` templates, NPC 2000986 SQL, Perl requirements, and placement directions. No live item or NPC kits.
+* **Demo** Read-only GitHub Pages app plus landing-page directions for the pack, Sage, and Lantern. Sage / Lantern / 2D maps stay out of the zip.
+
 ## [4.24.5] 10/2/2026
 
 * **Content Factory** Census a zone, cherry-pick trash vs named, mint item kits and dual loot tables, clone NPC spell sets into the 50000–65535 band, then run one pipeline that writes clones at 800000+ instead of editing vanilla PEQ. Lint, draft, pawn, give, probe, undo.
-* **Tier Factory** Named recipes with trash / boss / raid numbers plus a gear kit. Stamp or ladder tiers across many zones.
+* **Tier Factory** Named recipes with trash / boss / raid numbers plus a gear kit. Stamp copies that kit onto many zones. Ladder steps each zone by the multiplier and mints a new item ID range so T2 is not wearing T1 loot.
 * **LDoN** Theme-first zone and adventure search (Guk, Miragul, Mistmoore, Rujarkian, Takish) plus character points and wins.
 * **Keys / Flags** Owned and known keys plus quest, bucket, zone, and account flags on one character page.
-* **Zone Controller** Live apply / classify / coverage / validate helpers next to the JSON builder.
+* **Zone Controller** Live apply / classify / coverage / validate. Queues the same hail commands (`refreshzonedata`, `rebuffzone`, `applyallchanges`) through `ultimatedata/_spire_commands`.
+
+## [4.24.4] 10/1/2026
+
+* **Zone Controller** Browse configured `ultimatedata` zones. Builder creates or clones blank kits, applies trash / boss / raid basedata, and batch-adds custom mobs.
+* **Talents / Runewords** Edit the talent catalog, rank buckets, unlock flags, class specializations, trait vendor list, and runeword combo recipes. Preview then write JSON with backups.
+* **Tasks** Searchable task table instead of the old 900-row native select.
+* **Zones** Expansion labels match PEQ (Classic is 1, Kunark is 2). Zone Controller badge jumps to configured kits.
+* **Atlas** 3D Lantern mesh with spawn overlays and PEQ `grid` / `grid_entries` pathing. Sage connect stays on the EQ client folder.
+* **Evolving items** Targeted tables: chain details first, then item columns. Type 4 is zone-kill.
+
+## [4.24.3] 10/1/2026
+
+* **Release** Drop-in Windows exe. Put it next to `eqemu_config.json` and run it. Auto-update reads `eniner/ultimate-spire`, not EQEmu/spire.
+* **PEQ Editors** Hub maps every PHP editor tab onto a local page or table editor.
+* **Inventory** Paperdoll, bags, bank, shared bank, and parcels with item icons.
+* **Items** Search with class / race / deity chips and item icons.
+* **Server files** Point Spire at a quests folder and edit perl / lua in place.
+* **Website** Discord user ↔ EQ account link and `web_users` roles (`user` / `admin`).
+* **Privacy** Hide private details blurs names, hosts, keys, passwords, and paths for streams.
+* **2D zones** Map from first-launch `eq-asset-preview`. Spawn2 drag-save on the zone page.
 
 ## [4.24.2] 1/15/2026
 

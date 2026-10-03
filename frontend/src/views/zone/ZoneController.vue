@@ -4,6 +4,7 @@
       <b-alert show variant="danger" v-if="error">
         <i class="fa fa-warning"></i> {{ error }}
       </b-alert>
+      <demo-zc-pack-notice />
 
       <app-loader :is-loading="!loaded" class="mt-3 mb-3"/>
 
@@ -20,6 +21,7 @@
           >
             Zone map
           </router-link>
+          <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_GUIDE">Guide</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">Build zones / tiers</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
@@ -49,6 +51,7 @@
               The Tier Factory writes a named recipe onto many zones at once: basedata, cloned gear,
               spawn classify, then apply/reload.
             </p>
+            <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_GUIDE">How to operate these tools</router-link>
             <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">Open builder</router-link>
             <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
             <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
@@ -488,6 +491,7 @@
 <script>
 import EqWindow from "../../components/eq-ui/EQWindow"
 import ContentArea from "../../components/layout/ContentArea"
+import DemoZcPackNotice from "../../components/DemoZcPackNotice"
 import {ROUTE} from "@/routes"
 import {Zones} from "../../app/zones"
 import {
@@ -507,7 +511,7 @@ const PLACEHOLDER = [
 
 export default {
   name: "ZoneController",
-  components: {ContentArea, EqWindow},
+  components: {ContentArea, EqWindow, DemoZcPackNotice},
   data() {
     return {
       ROUTE,

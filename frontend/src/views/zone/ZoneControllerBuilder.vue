@@ -4,6 +4,7 @@
       <b-alert show variant="danger" v-if="error">
         <i class="fa fa-warning"></i> {{ error }}
       </b-alert>
+      <demo-zc-pack-notice />
       <b-alert show variant="info" v-if="plan && plan.dryRun && plan.ok">
         Preview only. {{ (plan.writes || []).length }} file action(s). Nothing written yet.
       </b-alert>
@@ -13,6 +14,7 @@
 
       <div class="ui-toolbar">
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER">All ZC zones</router-link>
+        <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_GUIDE">Guide</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>
         <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONES">Zones</router-link>
@@ -211,13 +213,14 @@
 <script>
 import EqWindow from "../../components/eq-ui/EQWindow"
 import ContentArea from "../../components/layout/ContentArea"
+import DemoZcPackNotice from "../../components/DemoZcPackNotice"
 import {ROUTE} from "@/routes"
 import {Zones} from "../../app/zones"
 import {ZoneControllerApi} from "../../app/zone-controller"
 
 export default {
   name: "ZoneControllerBuilder",
-  components: {ContentArea, EqWindow},
+  components: {ContentArea, EqWindow, DemoZcPackNotice},
   data() {
     return {
       ROUTE,

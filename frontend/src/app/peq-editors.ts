@@ -24,6 +24,7 @@ export const PEQ_EDITORS: PeqEditor[] = [
   { id: "zones", title: "Zones", php: "zone", group: "zone", status: "dedicated", to: "/zones", blurb: "Zone list, map, and spawn2 placement editor." },
   { id: "tier-factory", title: "Tier Factory", php: "zone", group: "zone", status: "dedicated", to: "/zones/controller/factory", blurb: "Named recipes, stamp or ladder tiers, clone/scale gear, classify spawns, validate, and apply." },
   { id: "content-factory", title: "Content Factory", php: "items", group: "content", status: "dedicated", to: "/zones/controller/content", blurb: "Census, trash/named targeting, kit/loot/spell minting, NPC clones, drafts, lint, and undo." },
+  { id: "zone-guide", title: "Zone systems guide", php: "zone", group: "zone", status: "dedicated", to: "/zones/controller/guide", blurb: "Walkthrough: new zone kits, minting items, cloning NPCs, pipeline, and Apply live." },
   { id: "doors", title: "Doors", php: "misc", group: "zone", status: "table", to: "/editors/doors", blurb: "Doors and teleports. Also drawn on the zone map." },
   { id: "traps", title: "Traps", php: "misc", group: "zone", status: "table", to: "/editors/traps", blurb: "Zone traps: radius, effect, respawn." },
   { id: "ground-spawns", title: "Ground Spawns", php: "misc", group: "zone", status: "table", to: "/editors/ground-spawns", blurb: "Ground items by zoneid." },
@@ -62,6 +63,7 @@ export const PEQ_EDITORS: PeqEditor[] = [
   { id: "chat", title: "Chat", php: "chat", group: "live", status: "table", to: "/editors/chat", blurb: "Chat channels." },
   { id: "util", title: "Utilities", php: "util", group: "live", status: "dedicated", to: "/editors/util", blurb: "Backups, reload, grids, and the PHP utility shortcuts." },
   { id: "server", title: "Server", php: "server", group: "live", status: "dedicated", to: "/admin", blurb: "Server admin, rules, reload, backups, players online." },
+  { id: "changelog", title: "Changelog", php: "server", group: "live", status: "dedicated", to: "/changelog", blurb: "Ultimate Spire version notes. Generate markdown for CHANGELOG.md or a GitHub release." },
 ]
 
 export const PEQ_EDITOR_GROUPS: { id: PeqEditorGroup; title: string }[] = [

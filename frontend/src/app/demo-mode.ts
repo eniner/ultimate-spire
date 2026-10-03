@@ -1,7 +1,21 @@
 import {demoAdminBody} from "@/app/demo-admin"
+import {formatUltimateChangelog} from "@/app/ultimate-changelog"
 
 export function isDemoMode() {
   return process.env.VUE_APP_DEMO === "true"
+}
+
+export function demoSiteUrl(hashOrFile = "") {
+  const base = process.env.BASE_URL || "/"
+  return base.replace(/\/?app\/?$/, "/") + String(hashOrFile || "").replace(/^\//, "")
+}
+
+export function demoZcPackUrl() {
+  return demoSiteUrl("zone-controller-starter.zip")
+}
+
+export function demoZcGuideUrl() {
+  return demoSiteUrl("#zone-controller")
 }
 
 let tables: any = null
@@ -220,12 +234,15 @@ function demoBody(config: any) {
   const method = String(config.method || "get").toLowerCase()
   const params = paramsOf(config)
 
+  if (path.indexOf("/app/changelog") !== -1) {
+    return {data: formatUltimateChangelog()}
+  }
   if (path.indexOf("/app/env") !== -1) {
     return {
       data: {
         os: "demo",
         env: "local",
-        version: "4.24.5-demo",
+        version: "4.24.6-demo",
         features: {github_auth_enabled: false},
         settings: [{setting: "AUTH_ENABLED", value: "false"}],
         is_spire_initialized: true,

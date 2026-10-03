@@ -16,6 +16,7 @@
       <div v-if="loaded">
         <div class="ui-toolbar">
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER">Zone Controller</router-link>
+          <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_GUIDE">Guide</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_BUILDER">ZC builder</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.ZONE_CONTROLLER_FACTORY">Tier Factory</router-link>
           <router-link class="btn btn-sm btn-dark" :to="ROUTE.CONTENT_FACTORY">Content Factory</router-link>

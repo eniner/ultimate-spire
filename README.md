@@ -169,7 +169,12 @@ Want to help contribute to Spire? Anyone can submit [pull requests](https://gith
 
 ### Contributing - Cutting a Release
 
-When looking to cut a new release of Spire, a PR will need to be made that resembles the following [example here](https://github.com/EQEmu/spire/commit/a5327c4968a08165434620bcedebe438a6500bb6). A version tag will need to be declared in both `CHANGELOG.md` containing proper release notes and the same version number will need to be updated in `package.json`.
+Ultimate Spire releases go to [eniner/ultimate-spire](https://github.com/eniner/ultimate-spire/releases), not EQEmu/spire.
+
+1. Open Changelog in the app (`/changelog` or ninja "Changelog") and use **Generate notes** / **Generate release body**. Keep `frontend/src/app/ultimate-changelog.ts` and `CHANGELOG.md` in sync, and set the same version in `package.json`.
+2. Build the Windows exe and publish the GitHub release on `eniner/ultimate-spire`. Auto-update reads that repo.
+
+Stock Spire still uses a PR that resembles [this example](https://github.com/EQEmu/spire/commit/a5327c4968a08165434620bcedebe438a6500bb6). Do not push Ultimate changes to EQEmu/spire.
 
 ![image](https://user-images.githubusercontent.com/3319450/192076389-0c18c58c-21de-4319-b5eb-d41801a0a063.png)
 

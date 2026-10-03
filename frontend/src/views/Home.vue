@@ -1,159 +1,114 @@
 <template>
-  <eq-window
-    title="Spire Changelog"
-    class="mt-3"
-  >
-    <div style="min-height: 100vh">
-
-      <div class="row" id="changelog">
-        <div class="col-12">
-          <v-runtime-template
-            class="changelog markdown-body"
-            :template="changelog"
-
-          />
-        </div>
+  <content-area>
+    <eq-window title="Ultimate Spire changelog">
+      <p class="zc-copy">
+        Notes for this build. Generate copies markdown you can paste into
+        <code>CHANGELOG.md</code> or a GitHub release.
+      </p>
+      <div class="ui-toolbar">
+        <button
+          type="button"
+          class="btn btn-sm"
+          :class="!focus ? 'btn-primary' : 'btn-dark'"
+          @click="focus = ''"
+        >
+          All
+        </button>
+        <button
+          v-for="release in releases"
+          :key="release.version"
+          type="button"
+          class="btn btn-sm"
+          :class="focus === release.version ? 'btn-primary' : 'btn-dark'"
+          @click="focus = release.version"
+        >
+          {{ release.version }}
+        </button>
+        <button type="button" class="btn btn-sm btn-dark" @click="generate('notes')">
+          Generate notes
+        </button>
+        <button type="button" class="btn btn-sm btn-dark" @click="generate('release')">
+          Generate release body
+        </button>
       </div>
+      <b-alert v-if="copied" show variant="success">Copied to clipboard.</b-alert>
+    </eq-window>
 
-    </div>
-  </eq-window>
+    <eq-window
+      v-for="release in visible"
+      :key="release.version"
+      class="mt-3"
+      :title="releaseTitle(release)"
+    >
+      <ul class="guide-steps">
+        <li v-for="(item, index) in release.items" :key="release.version + '-' + index">
+          <b>{{ item.area }}</b>
+          {{ item.text }}
+        </li>
+      </ul>
+    </eq-window>
+  </content-area>
 </template>
 
 <script>
-
-import EqWindow        from "@/components/eq-ui/EQWindow";
-import UserContext     from "@/app/user/UserContext";
-import {SpireApi}      from "../app/api/spire-api";
-import * as util       from "util";
-import VideoViewer     from "../app/video-viewer/video-viewer";
-import LazyImageLoader from "@/app/lazy-image-load/lazy-image-load";
+import EqWindow from "@/components/eq-ui/EQWindow"
+import ContentArea from "@/components/layout/ContentArea"
+import ClipBoard from "@/app/clipboard/clipboard"
+import {Notify} from "@/app/Notify"
+import {ULTIMATE_CHANGELOG, formatUltimateChangelog, formatUltimateReleaseNotes} from "@/app/ultimate-changelog"
 
 export default {
-  components: {
-    EqWindow,
-    "v-runtime-template": () => import("v-runtime-template")
-  },
+  name: "Home",
+  components: {EqWindow, ContentArea},
   data() {
     return {
-      userContext: null,
-      changelog: "",
+      releases: ULTIMATE_CHANGELOG.filter((release) => release.items.length),
+      focus: "",
+      copied: false,
     }
   },
-  async mounted() {
-    this.userContext = await (UserContext.getUser())
-
-    SpireApi.v1().get(`/app/changelog`).then((response) => {
-      if (response.data && response.data.data) {
-
-        let markdownRaw = response.data.data
-
-        const youTubeSplit = markdownRaw.split("[![](https://img.youtube.com/vi/")
-
-        youTubeSplit.forEach((e) => {
-          if (e.includes("/0.jpg)](https://www.youtube.com")) {
-            const videoCodeSplit = e.split("/0.jpg")
-            if (videoCodeSplit.length > 0) {
-              const videoCode = videoCodeSplit[0].trim()
-
-              // replace markdown code for html
-              markdownRaw = markdownRaw.replace(
-                util.format("[![](https://img.youtube.com/vi/%s/0.jpg)](https://www.youtube.com/watch?v=%s)", videoCode, videoCode),
-                util.format('<div class="container"><iframe allow="autoplay" class="video lazy-video" data-src="https://www.youtube.com/embed/%s?mute=1&showinfo=0&controls=0&modestbranding=1&rel=0&loop=1&showsearch=0&iv_load_policy=3&playlist=%s" title="YouTube video player" frameborder="0" allowfullscreen></iframe></div>\n', videoCode, videoCode)
-              )
-
-              // console.log("Video code is [%s]", videoCode)
-            }
-          }
-        })
-
-        const md = require("markdown-it")({
-          html: true,
-          xhtmlOut: false,
-          breaks: true,
-          typographer: false,
-          linkify: true
-        });
-
-        markdownRaw = md.render(markdownRaw);
-
-        // lazy image load injection
-        markdownRaw = markdownRaw.replaceAll(
-          "img src=",
-          "img class='lazy-image lazy-image-unloaded' src='data:image/gif;base64,R0lGODlhAQABAIAAAMLCwgAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==' data-src="
-        )
-
-        // doc
-        this.changelog = "<div>" + markdownRaw + "</div>"
-
-        setTimeout(() => {
-          const anchors = document.getElementById('changelog').getElementsByTagName('a');
-          for (var i = 0; i < anchors.length; i++) {
-            anchors[i].setAttribute('target', '_blank');
-          }
-
-          document.querySelectorAll('#changelog h1, #changelog h2, #changelog h3, #changelog h4').forEach($heading => {
-
-            //create id from heading text
-            const id = $heading.getAttribute("id") || $heading.innerText.toLowerCase().replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '').replace(/ +/g, '-');
-
-            //add id to heading
-            $heading.setAttribute('id', id);
-
-            //append parent class to heading
-            $heading.classList.add('anchor-heading');
-
-            //create anchor
-            let $anchor         = document.createElement('a');
-            $anchor.className   = 'anchor-link';
-            $anchor.href        = '#' + id;
-            $anchor.innerText   = ' # ';
-            $anchor.style.color = '#666';
-
-            //append anchor after heading text
-            $heading.append($anchor);
-          });
-
-          document.querySelectorAll("table").forEach((e) => {
-            if (e) {
-              e.classList.add('eq-table')
-              e.classList.add('bordered')
-              e.outerHTML = "<div class='eq-window-simple mt-3 mb-3 p-0' style='overflow-y: hidden'>" + e.outerHTML + "</div>"
-            }
-          });
-
-        }, 100)
-
+  computed: {
+    visible() {
+      if (!this.focus) {
+        return this.releases
       }
-    })
-
-    LazyImageLoader.addScrollListener()
-
-    // auto play videos that are in the viewport
-    window.addEventListener("scroll", this.handleRender);
-    setTimeout(() => {
-      this.handleRender()
-      LazyImageLoader.handleRender()
-    }, 500)
+      return this.releases.filter((release) => release.version === this.focus)
+    },
   },
   methods: {
-    handleRender() {
-      let videos = document.getElementsByClassName("video");
-      for (let i = 0; i < videos.length; i++) {
-        let video = videos.item(i)
-        if (VideoViewer.elementInViewport(video) && !video.src.includes("autoplay")) {
-          video.src = video.src + "&autoplay=1"
-        }
-      }
-    }
+    releaseTitle(release) {
+      return release.date ? release.version + " — " + release.date : release.version
+    },
+    generate(kind) {
+      const text = kind === "release" ? formatUltimateReleaseNotes() : formatUltimateChangelog()
+      ClipBoard.copyFromText(text)
+      this.copied = true
+      Notify.toast("Changelog copied to clipboard")
+    },
   },
-  deactivated() {
-    window.removeEventListener("scroll", this.handleRender, false)
-    LazyImageLoader.destroyScrollListener()
-  }
 }
 </script>
 
-<style>
+<style scoped>
+.zc-copy {
+  color: var(--text-muted, #b7c0cc);
+  margin-bottom: 12px;
+}
 
+.guide-steps {
+  color: var(--text-muted, #b7c0cc);
+  line-height: 1.65;
+  padding-left: 22px;
+  margin: 0;
+}
 
+.guide-steps li {
+  margin-bottom: 10px;
+}
+
+.ui-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 </style>
